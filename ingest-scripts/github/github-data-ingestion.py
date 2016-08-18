@@ -12,10 +12,14 @@ ingest_logger = logging.getLogger('github-data-ingestion')
 #
 # The main workhorse that pulls the data and creates the data document from it.
 #
-
-
-def _ingest_org_data(config):
-    orgs = _get_orgs(config)
+#   Parameters
+#   ----------
+#   config : dictionary
+#            Holds all the configurations for this program to run
+#   orgs : list
+#          Names of organizations or users which for Github are all Users by either of Type=User or Type=Organization
+#
+def _ingest_repo_data(config, orgs):
     repos_result = []
 
     for org in orgs:
@@ -74,45 +78,42 @@ def _ingest_org_data(config):
 
     return repos_result
 
-#
-# The access method for github is different for each system.  Both modes should be accepted soon.
-#
-# If Enterprise then we use the Personal Access Token otherwise an OAuth token pair.
-#
+
+def _process_enterprise_orgs_users(config):
+    url = _get_github_url(config) + '/users?' + _get_auth_http_params(config) + '&since=0&per_page=100'
+
+    results = []
+    orgs_cnt = 0
+    while True:
+        orgs_response = requests.get(url)
+        orgs = json.loads(orgs_response.text)
+        orgs_cnt += len(orgs)
+        if not orgs:
+            break
+
+        results.extend(_ingest_repo_data(config, orgs))
+
+        # is there another page to pull?
+        if 'next' not in orgs_response.links:
+            break
+
+        url = orgs_response.links['next']['url']
+
+    ingest_logger.info('Total Orgs (Organizations and Users) Processed: %s', orgs_cnt)
+    ingest_logger.info('Total Repos Processed: %s', len(results))
+
+    return results
 
 
-def _get_auth_http_params(config):
-    if config['env'] == 'ENTERPRISE':
-        return 'access_token=' + config['enterprise_github_access_token']
-    else:
-        return 'client_id=' + config['github_oauth_client_id'] +\
-               '&client_secret=' + config['github_oauth_client_secret']
+def _process_public_orgs(config):
+    orgs = _get_public_orgs(config)
 
-#
-# The API URL for each system differs and this method returns the correct one as determined by the env property.
-#
+    results = _ingest_repo_data(config, orgs)
 
+    ingest_logger.info('Total Orgs (Organizations and Users) Processed: %s', len(orgs))
+    ingest_logger.info('Total Repos Processed: %s', len(results))
 
-def _get_github_url(config):
-    if config['env'] == 'ENTERPRISE':
-        return config['enterprise_github_api_url']
-    else:
-        return config['public_github_api_url']
-
-
-def _get_orgs(config):
-    if config['env'] == 'ENTERPRISE':
-        return _get_enterprise_orgs(config)
-    else:
-        return _get_public_orgs(config)
-
-
-def _get_enterprise_orgs(config):
-    orgs_response = requests.get(_get_github_url(config) + '/organizations?' + _get_auth_http_params(config))
-    orgs = json.loads(orgs_response.text)
-    ingest_logger.info(orgs)
-
-    return orgs
+    return results
 
 
 def _get_public_orgs(config):
@@ -126,13 +127,34 @@ def _get_public_orgs(config):
 
 
 #
+# The access method for github is different for each system.  Both modes should be accepted soon.
+#
+# If Enterprise then we use the Personal Access Token otherwise an OAuth token pair.
+#
+def _get_auth_http_params(config):
+    if config['env'] == 'ENTERPRISE':
+        return 'access_token=' + config['enterprise_github_access_token']
+    else:
+        return 'client_id=' + config['github_oauth_client_id'] +\
+               '&client_secret=' + config['github_oauth_client_secret']
+
+
+#
+# The API URL for each system differs and this method returns the correct one as determined by the env property.
+#
+def _get_github_url(config):
+    if config['env'] == 'ENTERPRISE':
+        return config['enterprise_github_api_url']
+    else:
+        return config['public_github_api_url']
+
+
+#
 # Calculate:
 #   Number of Commits by all Contributors
 #   Number of Contributors
 #   List of Contributors
 #
-
-
 def _get_contributors_info(config, org, repo_name):
     contribs_response = requests.get(_get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name + '/contributors?anon=true&' + _get_auth_http_params(config))
 
@@ -162,15 +184,13 @@ def _get_contributors_info(config, org, repo_name):
 #
 # Process README content and url
 #
-
-
 def _get_readme_info(config, org, repo_name):
     readme_response = requests.get(_get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name +
                                    '/contents/README.md?' + _get_auth_http_params(config))
     readme_response = json.loads(readme_response.text)
     readme_results = {'readme_contents': '', 'readme_url': ''}
 
-    if not readme_response.has_key('documentation_url'):
+    if 'documentation_url' not in readme_response:
         readme_results['readme_contents'] = base64.b64decode(readme_response['content'])
         readme_results['readme_url'] = readme_response['download_url']
 
@@ -192,22 +212,17 @@ def _count_releases(config, org, repo_name):
                             _get_auth_http_params(config))
     releases = json.loads(releases.text)
 
-    num_releases = 0
-    for release in releases:
-        num_releases += 1
-
-    return num_releases
+    return len(releases)
 
 
 def _write_data_to_file(config, data):
     with open(config['data_output_file'], "w") as outfile:
         json.dump(data, outfile, indent=4)
 
+
 #
 # Process the commandline arguments and the configuration file to create a full configuration object for the program.
 #
-
-
 def _read_config(args):
     config_filename = 'ingest.conf'
     config = {}
@@ -237,8 +252,6 @@ def _read_config(args):
 #
 # Format org list by removing all whitespace and converting from a single string to a list of strings.
 #
-
-
 def _convert_public_orgs(config):
     orgs = []
     for org in config['public_orgs'].split(','):
@@ -271,19 +284,25 @@ def main(args):
     if config['env'] == 'ALL':
         ingest_logger.info('Processing Enterprise GitHub systems...')
         config['env'] = 'ENTERPRISE'
-        results = _ingest_org_data(config)
+        results = _process_enterprise_orgs_users(config)
         ingest_logger.info('Done processing Enterprise GitHub systems')
 
         ingest_logger.info('Processing Public GitHub systems...')
         config['env'] = 'PUBLIC'
-        results.append(_ingest_org_data(config))
+        results.extend(_process_public_orgs(config))
         ingest_logger.info('Done processing Public GitHub systems')
 
         config['env'] = 'ALL'
+    elif config['env'] == 'ENTERPRISE':
+        ingest_logger.info('Processing Enterprise GitHub systems...')
+        results = _process_enterprise_orgs_users(config)
+        ingest_logger.info('Done processing %s Enterprise GitHub systems', len(results))
+    elif config['env'] == 'PUBLIC':
+        ingest_logger.info('Processing Public GitHub systems...')
+        results = _process_public_orgs(config)
+        ingest_logger.info('Done processing Public GitHub systems')
     else:
-        ingest_logger.info('Processing only %s GitHub system...', config['env'])
-        results = _ingest_org_data(config)
-        ingest_logger.info('Done processing only %s GitHub system', config['env'])
+        raise ValueError('Unrecognized Environment for Excecution [%s]', config['env'])
 
     ingest_logger.info('Writing to file: %s', config['data_output_file'])
     _write_data_to_file(config, results)
