@@ -162,10 +162,11 @@ def makeEsUpdates(config,returned_responses):
     return collected_response
 
 def process_elasticSearch_update(config,results):
-    logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
     if config['update'] == 'results.out':
+        logging.info(time.strftime("%c")+' Writing the result data to a local file results.out')
         write_results(config['update'], results)
     else:
+        logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
         res_arr = get_es_project(config,results)
         collected_response = makeEsUpdates(config,res_arr)
         display_stats(config, collected_response)
