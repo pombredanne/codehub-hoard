@@ -4,7 +4,6 @@ import requests
 import json
 import xmltodict
 import os
-from collections import defaultdict
 import shutil
 import configparams
 import time
@@ -168,8 +167,8 @@ def process_elasticSearch_update(config,results):
     if config['update'] == 'results.out':
         write_results(config['update'], results)
     else:
-        collected_response = makeEsUpdates(res_arr)
-        display_stats(collected_response)
+        collected_response = makeEsUpdates(config,res_arr)
+        display_stats(config, collected_response)
 
 def write_results(resultfile,results):
     file_object = open(resultfile, 'w')
@@ -178,11 +177,12 @@ def write_results(resultfile,results):
         file_object.write(json.dumps(res))
         file_object.write("\n")
 
-def display_stats(response_arr):
+def display_stats(config, response_arr):
     logging.info(time.strftime("%c")+" ******The following "+str(len(response_arr)) + " projects have dependencies******")
     repos_just_updated = []
+    configurations = config['config']
     for repo in response_arr:
-        response = requests.get(config['stage_es_url']+'/projects/logs/'+repo['_id'])
+        response = requests.get(configurations['stage_es_url']+'/projects/logs/'+repo['_id'])
         logging.info(json.loads(response.text)['_source']['project_name'])
         if(repo['_shards']['successful'] == 1):
             repos_just_updated.append(json.loads(response.text)['_source']['project_name'])
