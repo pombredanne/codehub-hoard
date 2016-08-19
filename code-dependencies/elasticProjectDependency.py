@@ -10,29 +10,15 @@ import configparams
 import time
 import logging
 
-
-def authenticate_github():
-    print("...collecting github credentials")
-    logger.info(time.strftime("%c")+' collecting github credentials')
-    credentials = {}
-    with open('github_auth.txt', 'r') as myfile:
-        client_id=myfile.readline().replace('\n', '')
-        client_secret=myfile.readline()
-        credentials['client_id'] = client_id
-        credentials['client_secret'] = client_secret
-    return credentials
-
-
 def collect_repositries(config):
-    print("...collecting repositories name, clone_url")
-    logger.info(time.strftime("%c")+' collecting repositories name, clone_url')
-    credentials = authenticate_github()
-    client_id = credentials['client_id']
-    client_secret = credentials['client_secret']
+    logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
+    configurations = config['config']
+    client_id = configurations['github_oauth_client_id']
+    client_secret = configurations['github_oauth_client_secret']
     repos = []
-    orgs = config['public_orgs']
+    orgs = configurations['public_orgs']
     for org in orgs:
-        r = requests.get(config['public_github_api_url']+'/orgs/' + org + '/repos?client_id=' + config['github_oauth_client_id'] +'&client_secret=' + config['github_oauth_client_secret'])
+        r = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?client_id=' + client_id +'&client_secret=' + client_secret)
         orgs_reponsitories = json.loads(r.text)
 
         for org_repo in orgs_reponsitories:
@@ -50,21 +36,17 @@ def delete_directory(path):
 
 def clone_projects(repos):
     clone_dir = os.getcwd() + '/cloned_projects/'
-    print("...removing repositories if already exists")
-    logger.info(time.strftime("%c")+' removing repositories if already exists')
+    logging.info(time.strftime("%c")+' removing repositories if already exists')
     delete_directory(clone_dir)
-    print("...cloning respositories in " + clone_dir)
-    logger.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
+    logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
     for repo in repos:
-        print("...cloning " + repo['project_name'] + " repo of "+ repo['org'])
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
         clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
         if not os.path.exists(clone_dir):
             Repo.clone_from(repo['clone_url'], clone_dir)
 
 def process_cloned_projects(repos):
-    print("...collecting pom files recursively")
-    logger.info(time.strftime("%c")+' collecting pom files recursively')
+    logging.info(time.strftime("%c")+' collecting pom files recursively')
     repos_pom = []
     for repo in repos:
         pom_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/**/pom.xml'
@@ -78,8 +60,7 @@ def process_cloned_projects(repos):
     return repos_pom
 
 def parse_projects(repos_pom):
-    print("...traversing through projects")
-    logger.info(time.strftime("%c")+' traversing through projects')
+    logging.info(time.strftime("%c")+' traversing through projects')
     aggregate_results = []
     for poms in repos_pom:
         pom_files_arr = poms['pom_list']
@@ -96,8 +77,7 @@ def parse_projects(repos_pom):
     return aggregate_results
 
 def read_pom_content(file_path):
-    print("...reading pom files content")
-    logger.info(time.strftime("%c")+' reading pom files content')
+    logging.info(time.strftime("%c")+' reading pom files content')
     file_object = open(file_path, "r+")
     content = file_object.read()
     parsed = xmltodict.parse(content)
@@ -105,8 +85,7 @@ def read_pom_content(file_path):
     return parsed_json
 
 def parse_aggregate(parsed_json):
-    print("...parsing and aggregating pom files")
-    logger.info(time.strftime("%c")+ ' parsing and aggregating pom files')
+    logging.info(time.strftime("%c")+ ' parsing and aggregating pom files')
     content_array = []
     if('dependencies' in parsed_json):
         if('dependency' in parsed_json['dependencies']):
@@ -140,6 +119,7 @@ def filter_dependencies(repo):
 
 def getESProject(config,results):
     returned_responses_collection = []
+    configurations = config['config']
     for res in results:
         query_data = {
                       "query": {
@@ -151,7 +131,7 @@ def getESProject(config,results):
                         }
                       }
                     }
-        response = requests.get(config['stage_es_url']+'/projects/logs/_search', data=json.dumps(query_data))
+        response = requests.get(configurations['stage_es_url']+'/projects/logs/_search', data=json.dumps(query_data))
         returned_res = json.loads(response.text)
         collected_response = {}
         if returned_res['hits']['total'] > 0:
@@ -161,9 +141,10 @@ def getESProject(config,results):
 
     return returned_responses_collection
 
-def makeEsUpdates(returned_responses):
+def makeEsUpdates(config,returned_responses):
     collected_ids = []
     collected_response = []
+    configurations = config['config']
     for ret in returned_responses:
         project_id = ret['returned_res']['hits']['hits'][0]['_id']
         filtered_repo_dependencies = ret['filtered']
@@ -173,7 +154,7 @@ def makeEsUpdates(returned_responses):
             update_query = {
               "doc": data_json
             }
-            ret_response = requests.post(config['stage_es_url']+'/projects/logs/'+project_id+'/_update', data=json.dumps(update_query))
+            ret_response = requests.post(configurations['stage_es_url']+'/projects/logs/'+project_id+'/_update', data=json.dumps(update_query))
             if project_id not in collected_ids:
                 collected_ids.append(project_id)
                 collected_response.append(json.loads(ret_response.text))
@@ -182,36 +163,44 @@ def makeEsUpdates(returned_responses):
     return collected_response
 
 def process_elasticSearch_update(config,results):
-    print("...talking to ES and adding project depedency attribute with processed data")
-    logger.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
+    logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
     res_arr = getESProject(config,results)
-    collected_response = makeEsUpdates(res_arr)
-    display_stats(collected_response)
+    if config['update'] == 'results.out':
+        write_results(config['update'], results)
+    else:
+        collected_response = makeEsUpdates(res_arr)
+        display_stats(collected_response)
+
+def write_results(resultfile,results):
+    file_object = open(resultfile, 'w')
+    file_object.write("\t******************** The following Projects have dependencies ********************************\n\n")
+    for res in results:
+        file_object.write(json.dumps(res))
+        file_object.write("\n")
 
 def display_stats(response_arr):
-    print("******The following "+str(len(response_arr)) + " projects have dependencies******")
+    logging.info(time.strftime("%c")+" ******The following "+str(len(response_arr)) + " projects have dependencies******")
     repos_just_updated = []
     for repo in response_arr:
         response = requests.get(config['stage_es_url']+'/projects/logs/'+repo['_id'])
-        print(json.loads(response.text)['_source']['project_name'])
+        logging.info(json.loads(response.text)['_source']['project_name'])
         if(repo['_shards']['successful'] == 1):
             repos_just_updated.append(json.loads(response.text)['_source']['project_name'])
 
     if(len(repos_just_updated) > 0):
-        print("******The following projects are "+ str(len(repos_just_updated))+" just updated******")
+        logging.info("******The following projects are "+ str(len(repos_just_updated))+" just updated******")
         for repo in repos_just_updated:
-            print(repo)
+            logging.info(repo)
     else:
-        print("****No Project is updated****")
+        logging.info(time.strftime("%c")+" **** No Project is updated ****")
 
 def cleanup_after_update():
     clone_dir = os.getcwd() + '/cloned_projects/'
-    print('...cleaning up after elasticsearch updates')
-    logger.info(time.strftime("%c")+' cleaning up after elasticsearch updates')
+    logging.info(time.strftime("%c")+' cleaning up after elasticsearch updates')
     delete_directory(clone_dir)
+
 def automate_processes(config):
-    print("...Started")
-    logger.info(time.strftime("%c")+' Started')
+    logging.info(time.strftime("%c")+' Started')
     repos = collect_repositries(config)
     clone_projects(repos)
     poms = process_cloned_projects(repos)
@@ -222,6 +211,4 @@ def automate_processes(config):
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
     config = configparams.main(parsed)
-    configparams._config_logger(parsed)
-    logger = logging.getLogger('configparams')
     automate_processes(config)
