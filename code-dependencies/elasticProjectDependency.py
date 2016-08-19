@@ -116,7 +116,7 @@ def filter_dependencies(repo):
             filtered_dependency.append(filter)
     return filtered_dependency
 
-def getESProject(config,results):
+def get_es_project(config,results):
     returned_responses_collection = []
     configurations = config['config']
     for res in results:
@@ -163,10 +163,10 @@ def makeEsUpdates(config,returned_responses):
 
 def process_elasticSearch_update(config,results):
     logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
-    res_arr = getESProject(config,results)
     if config['update'] == 'results.out':
         write_results(config['update'], results)
     else:
+        res_arr = get_es_project(config,results)
         collected_response = makeEsUpdates(config,res_arr)
         display_stats(config, collected_response)
 
@@ -196,7 +196,7 @@ def display_stats(config, response_arr):
 
 def cleanup_after_update():
     clone_dir = os.getcwd() + '/cloned_projects/'
-    logging.info(time.strftime("%c")+' cleaning up after elasticsearch updates')
+    logging.info(time.strftime("%c")+' cleaning up cloned projects after elasticsearch updates or written to a file')
     delete_directory(clone_dir)
 
 def automate_processes(config):
