@@ -47,6 +47,7 @@ def clone_projects(repos):
 def process_cloned_projects(repos):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
     repos_pom = []
+
     for repo in repos:
         pom_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/**/pom.xml'
         lists = glob2.glob(pom_dir)
@@ -74,6 +75,19 @@ def parse_projects(repos_pom):
         dependency_map['dependency_content'] = dependency_content
         aggregate_results.append(dependency_map)
     return aggregate_results
+def process_gradle_projects(repos):
+    repos_gradle = []
+    for repo in repos:
+        gradle_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/**/build.gradle'
+        lists = glob2.glob(gradle_dir)
+        repo_map = {}
+        if(len(lists) > 0):
+            repo_map['project_name'] = repo['project_name']
+            repo_map['gradle_list'] = lists
+            repo_map['org'] = repo['org']
+            repos_gradle.append(repo_map)
+    return repos_gradle
+
 
 def read_pom_content(file_path):
     logging.info(time.strftime("%c")+' reading pom files content')
@@ -137,9 +151,7 @@ def get_es_project(config,results):
             collected_response['filtered'] = filter_dependencies(res)
             collected_response['returned_res'] = returned_res
             returned_responses_collection.append(collected_response)
-
     return returned_responses_collection
-
 def makeEsUpdates(config,returned_responses):
     collected_ids = []
     collected_response = []
@@ -148,7 +160,7 @@ def makeEsUpdates(config,returned_responses):
         project_id = ret['returned_res']['hits']['hits'][0]['_id']
         filtered_repo_dependencies = ret['filtered']
 
-        if 'project_dependency' in ret['returned_res']['hits']['hits'][0]['_source']:
+        if len(filtered_repo_dependencies) > 0:
             data_json = {"project_dependency": filtered_repo_dependencies}
             update_query = {
               "doc": data_json
@@ -157,9 +169,8 @@ def makeEsUpdates(config,returned_responses):
             if project_id not in collected_ids:
                 collected_ids.append(project_id)
                 collected_response.append(json.loads(ret_response.text))
-        else:
-            ret['returned_res']['project_dependency'] = [{'dependency':'not available'}]
     return collected_response
+
 
 def process_elasticSearch_update(config,results):
     if config['update'] == 'results.out':
@@ -184,9 +195,9 @@ def display_stats(config, response_arr):
     configurations = config['config']
     for repo in response_arr:
         response = requests.get(configurations['stage_es_url']+'/projects/logs/'+repo['_id'])
-        logging.info(json.loads(response.text)['_source']['project_name'])
+        logging.info(json.loads(response.text))
         if(repo['_shards']['successful'] == 1):
-            repos_just_updated.append(json.loads(response.text)['_source']['project_name'])
+            repos_just_updated.append(json.loads(response.text))
 
     if(len(repos_just_updated) > 0):
         logging.info("******The following projects are "+ str(len(repos_just_updated))+" just updated******")
