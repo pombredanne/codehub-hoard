@@ -19,7 +19,7 @@ def _read_config(args):
                 if len(prop) == 2:
                     config[prop[0].strip()] = prop[1].strip()
 
-    if args.env is not None:
+    if ('env' in args) and (args.env is not None):
         config['env'] = args.env.upper()
     else:
         config['env'] = 'PUBLIC'
@@ -41,23 +41,15 @@ def _write_update(args):
 def _parse_commandline():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-log', '--log',
-                        help='set the LOG_LEVEL [default: WARNING]',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-
-    parser.add_argument('-console', '--console',
-                        help='write logs to console. Omit if you want logs written to "project_dependency.log"',
-                        action='store_true')
-
-    parser.add_argument('-env', '--env',
-                        help='the environment to ingest data from [default: ENTERPRISE]',
-                        choices=['ALL', 'PUBLIC', 'ENTERPRISE'])
-
     parser.add_argument('-config', '--config',
                         help='the config file to use for the program [default: ingest.conf]')
 
+    parser.add_argument('-env', '--env',
+                        help='the config file to use for the program [default: ingest.conf]')
+
     parser.add_argument('-update', '--update',
-                        help='dependencies result will either be written to a file or ES will be updated [default: results.out]')
+                        help='dependencies result will either be written to a file or ES will be updated [default: results.out]',
+                        action='store_true')
 
     return parser.parse_args()
 
