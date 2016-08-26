@@ -75,6 +75,41 @@ def parse_projects(repos_pom):
         dependency_map['dependency_content'] = dependency_content
         aggregate_results.append(dependency_map)
     return aggregate_results
+
+def parse_js_projects(repos_js_dep):
+    logging.info(time.strftime("%c")+' traversing through js projects')
+    aggregate_results = []
+    for js_dep in repos_js_dep:
+        js_dep_files_arr = js_dep['dep_list']
+        combined_content = []
+        dependency_map = {}
+        for dep in js_dep_files_arr:
+            parsed_json = read_js_dep_content(dep)
+            dependency_arr = parse_js_aggregate(parsed_json)
+            try:
+                 combined_content = combined_content + dependency_arr
+            except ValueError:
+                 combined_content = []
+            dependency_map['project_name'] = js_dep['project_name']
+            dependency_map['org'] = js_dep['org']
+            if len(combined_content) > 0:
+                dependency_map['dependency_content'] = combined_content
+                aggregate_results.append(dependency_map)
+    return aggregate_results
+
+def parse_js_aggregate(parsed_json):
+    combined_result = []
+    for res in parsed_json:
+        for keys in res:
+            data_map = {}
+            data_map['groupId'] = keys
+            data_map['artifactId'] = keys
+            data_map['version'] = res[keys]
+            combined_result.append(data_map)
+    return combined_result
+
+
+
 def process_gradle_projects(repos):
     repos_gradle = []
     for repo in repos:
@@ -88,6 +123,34 @@ def process_gradle_projects(repos):
             repos_gradle.append(repo_map)
     return repos_gradle
 
+
+def process_js_projects(repos):
+    repos_js = []
+    for repo in repos:
+        package_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/package.json'
+        bower_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/bower.json'
+        package_lists = glob2.glob(package_dir)
+        bower_lists = glob2.glob(bower_dir)
+        combined_list = list(set(package_lists).union(bower_lists))
+        repo_map = {}
+        if(len(combined_list) > 0):
+            repo_map['project_name'] = repo['project_name']
+            repo_map['dep_list'] = combined_list
+            repo_map['org'] = repo['org']
+            repos_js.append(repo_map)
+    return repos_js
+
+def read_js_dep_content(file_path):
+    logging.info(time.strftime("%c")+' reading js dependency files content')
+    json_res = []
+    with open(file_path) as data_file:
+        try:
+             data = json.load(data_file)
+             if('devDependencies' in data):
+                 json_res.append(data['devDependencies'])
+        except ValueError:
+             data = []
+    return json_res
 
 def read_pom_content(file_path):
     logging.info(time.strftime("%c")+' reading pom files content')
@@ -172,7 +235,7 @@ def makeEsUpdates(config,returned_responses):
     return collected_response
 
 
-def process_elasticSearch_update(config,results):
+def process_elasticSearch_update(config, results):
     if config['update'] == 'results.out':
         logging.info(time.strftime("%c")+' Writing the result data to a local file results.out')
         write_results(config['update'], results)
@@ -217,7 +280,10 @@ def automate_processes(config):
     clone_projects(repos)
     poms = process_cloned_projects(repos)
     res = parse_projects(poms)
-    process_elasticSearch_update(config,res)
+    js_res = process_js_projects(repos)
+    js_ret_res = parse_js_projects(js_res)
+    combined_results = res + js_ret_res
+    process_elasticSearch_update(config,combined_results)
     cleanup_after_update()
 
 if __name__ == "__main__":
