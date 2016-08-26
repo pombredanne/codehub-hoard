@@ -13,7 +13,10 @@
 #
 
 ES_URL=http://"$2":9200/projects/_search/?size=10000
-DEXI_URL=http://"$3":5009/recommendation-service/api/v1/update_doc_sim
+DEXI_DEV_PORT=5010
+DEXI_PROD_PORT=5009
+DEXI_DOMAIN_NAME="$3"
+DEXI_PATH=/recommendation-service/api/v1/update_doc_sim
 PROD_DATA_FILE=data-from-es-prod.json
 DEV_DATA_FILE=data-from-es-dev.json
 
@@ -28,7 +31,7 @@ then
   if [ -f "$PROD_DATA_FILE" ]
   then
     echo "Pushing to $DEXI_URL..."
-    curl -v POST $DEXI_URL -d @$PROD_DATA_FILE --header "Content-Type: application/json"
+    curl -v POST http://"$DEXI_DOMAIN_NAME":"$DEXI_PROD_PORT""$DEXI_PATH" -d @$PROD_DATA_FILE --header "Content-Type: application/json"
   else
     echo "$PROD_DATA_FILE Not Found!"
     exit 1
@@ -45,7 +48,7 @@ then
   if [ -f "$DEV_DATA_FILE" ]
   then
     echo "Pushing to $DEXI_URL""_dev..."
-    curl -v POST $DEXI_URL"_dev" -d @$DEV_DATA_FILE --header "Content-Type: application/json"
+    curl -v POST http://"$DEXI_DOMAIN_NAME":"$DEXI_DEV_PORT""$DEXI_PATH" -d @$DEV_DATA_FILE --header "Content-Type: application/json"
   else
     echo "$DEV_DATA_FILE Not Found!"
     exit 1
