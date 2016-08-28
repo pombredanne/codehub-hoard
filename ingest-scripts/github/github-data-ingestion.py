@@ -198,9 +198,12 @@ def _get_readme_info(config, org, repo_name):
 
 
 def _get_suggest_info(repo_name, proj_desc):
-    suggest = '{"input": ["' + sub("[^a-zA-Z0-9\s]", '', repo_name) + '", "' + \
-              sub("[^a-zA-Z0-9\s]", '', proj_desc) + '"], "output": "' + \
-              sub("[^a-zA-Z0-9-\s]", '', repo_name) + '"}'
+    _repo_name = repo_name if repo_name is not None else ''
+    _proj_desc = proj_desc if proj_desc is not None else ''
+
+    suggest = '{"input": ["' + sub("[^a-zA-Z0-9\s]", '', _repo_name) + '", "' + \
+              sub("[^a-zA-Z0-9\s]", '', _proj_desc) + '"], "output": "' + \
+              sub("[^a-zA-Z0-9-\s]", '', _repo_name) + '"}'
     return json.loads(suggest)
 
 

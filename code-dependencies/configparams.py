@@ -44,9 +44,6 @@ def _parse_commandline():
     parser.add_argument('-config', '--config',
                         help='the config file to use for the program [default: ingest.conf]')
 
-    parser.add_argument('-env', '--env',
-                        help='the config file to use for the program [default: ingest.conf]')
-
     parser.add_argument('-update', '--update',
                         help='dependencies result will either be written to a file or ES will be updated [default: results.out]',
                         action='store_true')

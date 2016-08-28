@@ -224,7 +224,7 @@ def makeEsUpdates(config,returned_responses):
         filtered_repo_dependencies = ret['filtered']
 
         if len(filtered_repo_dependencies) > 0:
-            data_json = {"project_dependency": filtered_repo_dependencies}
+            data_json = {"componentDependencies": filtered_repo_dependencies}
             update_query = {
               "doc": data_json
             }
