@@ -13,7 +13,7 @@
 #
 
 ES_URL=http://"$2":9200/projects/_search/?size=10000
-DEXI_DEV_PORT=5010
+DEXI_DEV_PORT=5007
 DEXI_PROD_PORT=5009
 DEXI_DOMAIN_NAME="$3"
 DEXI_PATH=/recommendation-service/api/v1/update_doc_sim
