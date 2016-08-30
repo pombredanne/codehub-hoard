@@ -27,10 +27,12 @@ def _ingest_repo_data(config, orgs):
         repos = json.loads(repos_response.text)
         ingest_logger.info(repos)
 
+        org_name = org['login']
+        org_url = org['html_url']
+
         for repo in repos:
             repo_info = {}
             repo_name = None
-            org_name = None
             proj_desc = None
             proj_lang = None
             num_stars = None
@@ -38,13 +40,11 @@ def _ingest_repo_data(config, orgs):
             num_forks = None
 
             if repo['name'] is not None:
-                repo_name = repo['name'].encode('utf-8')
-            if repo['full_name'] is not None:
-                org_name = repo['full_name'].encode('utf-8').split('/', 1)[0]
+                repo_name = repo['name']
             if repo['description'] is not None:
-                proj_desc = repo['description'].encode('utf-8')
+                proj_desc = repo['description']
             if repo['language'] is not None:
-                proj_lang = repo['language'].encode('utf-8')
+                proj_lang = repo['language']
             if repo['stargazers_count'] is not None:
                 num_stars = repo['stargazers_count']
             if repo['watchers_count'] is not None:
@@ -57,9 +57,13 @@ def _ingest_repo_data(config, orgs):
             readme_results = _get_readme_info(config, org, repo_name)
 
             repo_info['repository'] = repo_name
+            repo_info['repository_url'] = repo['html_url']
             repo_info['full_name'] = org_name + '/' + repo_name
             repo_info['project_name'] = repo_name
+
             repo_info['organization'] = org_name
+            repo_info['organization_url'] = org_url
+
             repo_info['project_description'] = proj_desc
             repo_info['language'] = proj_lang
             repo_info['stars'] = num_stars
@@ -119,7 +123,7 @@ def _process_public_orgs(config):
 def _get_public_orgs(config):
     orgs_json = []
     for org in config['public_orgs']:
-        orgs_response = requests.get(_get_github_url(config) + '/orgs/' + org + '?' + _get_auth_http_params(config))
+        orgs_response = requests.get(_get_github_url(config) + '/users/' + org + '?' + _get_auth_http_params(config))
         orgs_json.append(json.loads(orgs_response.text))
 
     ingest_logger.info(orgs_json)
