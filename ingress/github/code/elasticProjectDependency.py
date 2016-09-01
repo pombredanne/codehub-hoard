@@ -1,13 +1,16 @@
-from git import Repo
-import glob2
-import requests
 import json
-import xmltodict
+import logging
 import os
 import shutil
-import configparams
 import time
-import logging
+
+import glob2
+import requests
+import xmltodict
+from git import Repo
+
+import configparams
+
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
