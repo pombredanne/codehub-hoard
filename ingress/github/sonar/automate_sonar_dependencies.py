@@ -9,13 +9,10 @@ import subprocess
 
 def install_sonar_server_dependencies(config):
     configurations = config['config']
-    print("yeeeepepepepepeppe")
-    print(configurations['install_sonar_server'])
     if(configurations['install_sonar_server']):
         install_sonar_server(config)
 
 def install_sonar_server(config):
-    print(os.getcwd())
     configurations = config['config']
     curr_dir = os.getcwd()
     run(["ls","-l"])
@@ -46,9 +43,7 @@ def install_sonar_runner(config):
         run(["wget", configurations['sonar_runner_url']],check=True)
     elif not os.path.exists("sonar-runner-2.4"):
         run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
-    print("immmmmmmm")
     runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
-    print(runner_dir)
     return runner_dir
 
 def automate_processes(config):
