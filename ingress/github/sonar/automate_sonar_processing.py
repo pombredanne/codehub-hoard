@@ -94,22 +94,11 @@ def writeToConfigFile(repo):
     file_object.write("sonar.sourceEncoding=UTF-8")
 
 def run_sonar_script(repo_dir,runner_dir):
-    print("runner "+runner_dir)
-    print("repo dir "+repo_dir)
     curr_dir = os.getcwd()
     os.chdir(repo_dir)
     call(["ls","-l"])
-    #os.chdir(curr_dir)
     run(runner_dir,check=True)
-    print(runner_dir)
     os.chdir(curr_dir)
-
-# def install_sonar_server_dependencies(config):
-#     configurations = config['config']
-#     print("yeeeepepepepepeppe")
-#     print(configurations['install_sonar_server'])
-#     if(configurations['install_sonar_server']):
-#         install_sonar_server(config)
 
 def install_sonar_runner_dependencies(config):
     configurations = config['config']
@@ -117,25 +106,6 @@ def install_sonar_runner_dependencies(config):
     if(configurations['install_sonar_runner']):
         runner_dir=install_sonar_runner(config)
     return runner_dir
-
-
-# def install_sonar_server(config):
-#     print(os.getcwd())
-#     configurations = config['config']
-#     #run(["mkdir","process_sonar_dir"],check=True)
-#     #os.chdir("process_sonar")
-#     curr_dir = os.getcwd()
-#     run(["ls","-l"])
-#     if not os.path.exists("sonar_server_dir"):
-#         os.makedirs("sonar_server_dir")
-#     os.chdir("process_sonar_dir")
-#     if not os.path.exists("sonarqube-6.0.zip"):
-#         run(["wget", "https://sonarsource.bintray.com/Distribution/sonarqube/sonarqube-6.0.zip"],check=True)
-#         run(["unzip", "sonarqube-6.0.zip"],check=True)
-#     if os.path.exists("sonarqube-6.0"):
-#         subprocess.Popen(["sonarqube-6.0/bin/macosx-universal-64/sonar.sh","console"],stdout=subprocess.PIPE)
-#     os.chdir("..")
-
 
 def install_sonar_runner(config):
     configurations = config['config']
@@ -145,11 +115,7 @@ def install_sonar_runner(config):
     if not os.path.exists("sonar-runner-2.4"):
         run(["wget", "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip"],check=True)
         run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
-    #os.chdir("sonarqube-6.0/bin/macosx-universal-64/")
-    #run("sonar-runner-2.4/bin/sonar-runner",check=True)
-    print("immmmmmmm")
     runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
-    print(runner_dir)
     return runner_dir
 
 
@@ -157,35 +123,25 @@ def make_sonar_api_call(processed_repos,config):
     filtered_repo = []
     for repo in processed_repos:
         repo['metrics'] = process_sonar_api_call(repo,config)
-        #repo['metrics']['maintainiability_rating'] = repo['metrics']['msr']['sqale_rating']
-        print("From Sonar=========yeeeepepepep===========")
-        print(repo)
         filtered_repo.append(repo)
     return filtered_repo
 
 
 def process_sonar_api_call(repo,config):
-    #metrics_list = ['bugs','new_bugs','reliability_rating','vulnerabilities','new_vulnerabilities','security_rating','code_smells','sqale_rating','new_code_smells','sqale_rating','dupilicated_lines_density','lines_of_code','complexity','comments_lines_density','violations','new_violations']
-    #print(config)
     configurations = config['config']
     metrics_list = configurations['sonar_health_metrics']
     health_metrics_map = {}
 
     res = '_response'
     for metric in metrics_list:
-        #returned_res = metric + res
         returned_res = requests.get(configurations['sonar_api_local_base_url']+'?resource='+repo['project_name']+"&metrics="+metric)
         returned_json = {}
-        print(returned_res)
         if(returned_res.status_code == 200):
             if(len(json.loads(returned_res.text)) > 0):
-                print(json.loads(returned_res.text))
                 if 'msr' in json.loads(returned_res.text)[0]:
                     returned_json = json.loads(returned_res.text)[0]['msr']
                     if len(returned_json) > 0:
                         health_metrics_map[metric] = returned_json[0]
-                        print("I dont know what")
-                        print(health_metrics_map[metric])
                     else:
                         health_metrics_map[metric] = {}
             else:
@@ -266,11 +222,8 @@ def makeEsUpdates(config,returned_responses):
 
 
 def process_elasticSearch_update(results, config):
-    print("Wowo Nate SOlomon333333333")
-    print(config['update'])
     if config['update'] == 'results.out':
         logging.info(time.strftime("%c")+' Writing the result data to a local file results.out')
-        print(config['update'])
         write_results(config['update'], results)
     else:
         logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
@@ -282,8 +235,6 @@ def write_results(resultfile,results):
     file_object = open(os.getcwd()+"/"+resultfile, 'w')
     file_object.write("\t******************** The following Projects have dependencies ********************************\n\n")
     for res in results:
-        print("really")
-        print(file_object.name)
         file_object.write(json.dumps(res))
         file_object.write("\n")
 
@@ -311,17 +262,14 @@ def cleanup_after_update():
 
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
-    print(sonar_dir)
     repos = collect_repositries(config)
-    for rep in repos:
-        print(rep['language'])
-    #clone_projects(repos)
+    clone_projects(repos)
     processed_repos = process_cloned_projects(repos)
     build_sonar_project_config(processed_repos,config)
 
     filtered_repo = make_sonar_api_call(processed_repos,config)
     process_elasticSearch_update(filtered_repo, config)
-    #cleanup_after_update()
+    cleanup_after_update()
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
