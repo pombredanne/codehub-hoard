@@ -33,7 +33,6 @@ def _read_config(args):
 
     _convert_public_orgs(config)
     _convert_sonar_metrics(config)
-    #_determine_sonar_server(config)
 
     return config
 
@@ -43,9 +42,6 @@ def _write_update(args):
         file_or_es = 'results.out'
     else:
         file_or_es = args.update
-    print(file_or_es)
-    print("wowowowowowowowoowow")
-    print(args)
     return file_or_es
 
 
@@ -91,5 +87,4 @@ def main(args):
     logging.basicConfig(filename='project_dependency.log', level=logging.INFO)
     config_update['config'] = _read_config(args)
     config_update['update'] = _write_update(args)
-    print(config_update)
     return config_update

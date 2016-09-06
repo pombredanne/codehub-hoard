@@ -24,7 +24,8 @@ def install_sonar_server(config):
     elif not os.path.exists("sonarqube-6.0"):
         run(["unzip", "sonarqube-6.0.zip"],check=True)
     if os.path.exists("sonarqube-6.0"):
-        run(["sonarqube-6.0/bin/macosx-universal-64/sonar.sh","console"])
+        server_dir = "sonarqube-6.0/bin/*/sonar.sh"
+        run([server_dir,"console"])
     os.chdir("..")
 
 def install_sonar_runner_dependencies(config):
