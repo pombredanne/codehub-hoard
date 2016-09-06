@@ -113,7 +113,7 @@ def install_sonar_runner(config):
         os.makedirs("sonar_runner_dir")
     os.chdir("sonar_runner_dir")
     if not os.path.exists("sonar-runner-2.4"):
-        run(["wget", "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip"],check=True)
+        run(["wget", configurations['sonar_runner_url']],check=True)
         run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
     runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
     return runner_dir

@@ -23,7 +23,7 @@ def install_sonar_server(config):
         os.makedirs("sonar_server_dir")
     os.chdir("sonar_server_dir")
     if not os.path.exists("sonarqube-6.0.zip"):
-        run(["wget", "https://sonarsource.bintray.com/Distribution/sonarqube/sonarqube-6.0.zip"],check=True)
+        run(["wget",configurations['sonar_server_download']],check=True)
     elif not os.path.exists("sonarqube-6.0"):
         run(["unzip", "sonarqube-6.0.zip"],check=True)
     if os.path.exists("sonarqube-6.0"):
@@ -43,7 +43,7 @@ def install_sonar_runner(config):
         os.makedirs("sonar_runner_dir")
     os.chdir("sonar_runner_dir")
     if not os.path.exists("sonar-runner-dist-2.4.zip"):
-        run(["wget", "http://repo1.maven.org/maven2/org/codehaus/sonar/runner/sonar-runner-dist/2.4/sonar-runner-dist-2.4.zip"],check=True)
+        run(["wget", configurations['sonar_runner_url']],check=True)
     elif not os.path.exists("sonar-runner-2.4"):
         run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
     print("immmmmmmm")
