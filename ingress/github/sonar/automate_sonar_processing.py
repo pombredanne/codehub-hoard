@@ -96,8 +96,9 @@ def writeToConfigFile(repo):
 def run_sonar_script(repo_dir,runner_dir):
     curr_dir = os.getcwd()
     os.chdir(repo_dir)
+    curr_sonar_dir = os.getcwd()
     call(["ls","-l"])
-    run(runner_dir,check=True)
+    call(runner_dir,shell=True)
     os.chdir(curr_dir)
 
 def install_sonar_runner_dependencies(config):
