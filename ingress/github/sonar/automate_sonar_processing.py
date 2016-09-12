@@ -81,7 +81,7 @@ def writeToConfigFile(repo):
     file_object = open(repo['root_dir']+"/sonar-project.properties", 'w')
     file_object.write("sonar.projectKey="+repo['project_name'])
     file_object.write("\n")
-    file_object.write("sonar.projectName="+repo['project_name']+" To be analyzed")
+    file_object.write("sonar.projectName="+repo['project_name']+" of "+repo["org"])
     file_object.write("\n")
     file_object.write("sonar.projectVersion=1.0")
     file_object.write("\n")
@@ -155,6 +155,8 @@ def adjust_language_naming(repo_language):
     if repo_language:
         if(repo_language.lower() == 'javascript'):
             lang = 'js'
+        elif(repo_language.lower() == 'java'):
+            lang = 'java'
         elif(repo_language.lower() == 'css'):
             lang = 'css'
         elif(repo_language.lower() == 'python'):
