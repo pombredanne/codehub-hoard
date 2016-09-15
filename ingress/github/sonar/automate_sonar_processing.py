@@ -13,29 +13,57 @@ import subprocess
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
     configurations = config['config']
-    client_id = configurations['github_oauth_client_id']
-    client_secret = configurations['github_oauth_client_secret']
     repos = []
+    if configurations['env']  == 'PUBLIC':
+        repos = get_public_repos(config)
+    elif configurations['env']  == 'ENTERPRISE':
+        repos = get_enterprise_repos(config)
+    else:
+        repos = get_public_repos(config) + get_enterprise_repos(config)
+    collected_orgs_repos = customize_repo_attributes_mapping(repos)
+    return collected_orgs_repos
+
+def get_public_repos(config):
+    configurations = config['config']
+    access_token = configurations['public_github_access_token']
+    orgs_public_repositories = []
     orgs = configurations['public_orgs']
     for org in orgs:
-        r = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?client_id=' + client_id +'&client_secret=' + client_secret)
-        orgs_reponsitories = json.loads(r.text)
+        res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=False)
+        orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
+    return orgs_public_repositories
 
-        for org_repo in orgs_reponsitories:
-            orgs_repos = {}
-            projects_name_git_url = {}
-            projects_name_git_url['project_name'] = org_repo['name']
-            projects_name_git_url['clone_url'] = org_repo['clone_url']
-            projects_name_git_url['language'] = org_repo['language']
-            projects_name_git_url['org'] = org
-            repos.append(projects_name_git_url)
+def get_enterprise_repos(config):
+    configurations = config['config']
+    orgs_enterprise_reponsitories = []
+    repos_url_list = []
+    access_token = configurations['enterprise_github_access_token']
+    res = requests.get(configurations['enterprise_github_api_url']+"?access_token="+access_token,verify=False)
+    res_list = json.loads(res.text)
+    for repo_url in res_list:
+        ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=False)
+        orgs_enterprise_reponsitories = orgs_enterprise_reponsitories +  json.loads(ret_list.text)
+    return orgs_enterprise_reponsitories
+
+def customize_repo_attributes_mapping(orgs_reponsitories):
+    repos = []
+    for org_repo in orgs_reponsitories:
+        orgs_repos = {}
+        projects_name_git_url = {}
+        projects_name_git_url['project_name'] = org_repo['name']
+        projects_name_git_url['clone_url'] = org_repo['clone_url']
+        projects_name_git_url['language'] = org_repo['language']
+        projects_name_git_url['org'] = org_repo['owner']['login']
+        repos.append(projects_name_git_url)
     return repos
 
 def delete_directory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def clone_projects(repos):
+def clone_projects(repos,config):
+    configurations = config['config']
+    access_token = configurations['public_github_access_token']
     clone_dir = os.getcwd() + '/cloned_projects/'
     logging.info(time.strftime("%c")+' removing repositories if already exists')
     #delete_directory(clone_dir)
@@ -266,13 +294,13 @@ def cleanup_after_update():
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
     repos = collect_repositries(config)
-    clone_projects(repos)
+    clone_projects(repos,config)
     processed_repos = process_cloned_projects(repos)
     build_sonar_project_config(processed_repos,config)
 
     filtered_repo = make_sonar_api_call(processed_repos,config)
     process_elasticSearch_update(filtered_repo, config)
-    cleanup_after_update()
+    #cleanup_after_update()
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()

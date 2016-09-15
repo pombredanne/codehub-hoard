@@ -22,7 +22,7 @@ def _read_config(args):
     if ('env' in args) and (args.env is not None):
         config['env'] = args.env.upper()
     else:
-        config['env'] = 'PUBLIC'
+        config['env'] = 'PUBLIC_AND_ENTERPRISE'
 
     if ('sonar_server' in args) and (args.sonar_server is not None):
         config['sonar_server'] = args.sonar_server

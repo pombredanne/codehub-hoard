@@ -21,11 +21,11 @@ def install_sonar_server(config):
     os.chdir("sonar_server_dir")
     run(["ls","-l"])
     if not os.path.exists("sonarqube-6.0.zip"):
-        run(["wget",configurations['sonar_server_download']],check=True)
+        run(["wget",configurations['sonar_server_download'],"--no-check-certificate"],check=True)
     elif not os.path.exists("sonarqube-6.0"):
         run(["unzip", "sonarqube-6.0.zip"],check=True)
     if os.path.exists("sonarqube-6.0"):
-	server_dir_linux = "sonarqube-6.0/bin/linux-x86-64/sonar.sh"
+        server_dir_linux = "sonarqube-6.0/bin/linux-x86-64/sonar.sh"
         server_dir_macos = "sonarqube-6.0/bin/macosx-universal-64/sonar.sh"
         run([server_dir_linux,"start"],check=True)
     os.chdir("..")
@@ -43,7 +43,7 @@ def install_sonar_runner(config):
         os.makedirs("sonar_runner_dir")
     os.chdir("sonar_runner_dir")
     if not os.path.exists("sonar-runner-dist-2.4.zip"):
-        run(["wget", configurations['sonar_runner_url']],check=True)
+        run(["wget", configurations['sonar_runner_url'],"--no-check-certificate"],check=True)
     elif not os.path.exists("sonar-runner-2.4"):
         run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
     runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
