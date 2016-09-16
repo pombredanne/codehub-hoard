@@ -12,19 +12,17 @@ from git import Repo
 import configparams
 
 
-def collect_repositries(config):
+def collect_repositories(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
     configurations = config['config']
-    client_id = configurations['github_oauth_client_id']
-    client_secret = configurations['github_oauth_client_secret']
+    github_access_token = configurations['public_github_access_token']
     repos = []
     orgs = configurations['public_orgs']
     for org in orgs:
-        r = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?client_id=' + client_id +'&client_secret=' + client_secret)
+        r = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token=' + github_access_token)
         orgs_reponsitories = json.loads(r.text)
 
         for org_repo in orgs_reponsitories:
-            orgs_repos = {}
             projects_name_git_url = {}
             projects_name_git_url['project_name'] = org_repo['name']
             projects_name_git_url['clone_url'] = org_repo['clone_url']
@@ -32,20 +30,25 @@ def collect_repositries(config):
             repos.append(projects_name_git_url)
     return repos
 
+
 def delete_directory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def clone_projects(repos):
+
+def clone_projects(config, repos):
     clone_dir = os.getcwd() + '/cloned_projects/'
     logging.info(time.strftime("%c")+' removing repositories if already exists')
     delete_directory(clone_dir)
     logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
+
     for repo in repos:
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
         clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
+
         if not os.path.exists(clone_dir):
-            Repo.clone_from(repo['clone_url'], clone_dir)
+            Repo.clone_from(_calculate_clone_url(config, repo['clone_url']), clone_dir)
+
 
 def process_cloned_projects(repos):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
@@ -55,12 +58,34 @@ def process_cloned_projects(repos):
         pom_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/**/pom.xml'
         lists = glob2.glob(pom_dir)
         repo_map = {}
-        if(len(lists) > 0):
+
+        if len(lists) > 0:
             repo_map['project_name'] = repo['project_name']
             repo_map['pom_list'] = lists
             repo_map['org'] = repo['org']
             repos_pom.append(repo_map)
+
     return repos_pom
+
+
+#
+# Private repos must have a username in the URL to authenticate.  We'll have this authentication in place for
+# non-private repositories too so it is consistent and we can have a getting bandwidth for API calls.
+#
+# This method expects a URL of the form 'http://host/path' or 'https://host/path' and injects the configured
+# Github Access Token like such 'http://<token>@host/path' or 'https://<token>@host/path'
+#
+def _calculate_clone_url(config, url):
+    http_url = 'http://'
+    https_url = 'https://'
+
+    if url.find(https_url) == 0:
+        return url.replace(https_url, https_url + config['config']['public_github_access_token'] + '@')
+    elif url.find(http_url) == 0:
+        return url.replace(http_url, http_url + config['config']['public_github_access_token'] + '@')
+    else:
+        raise ValueError("Unrecognized URL Protocol: %s" + url)
+
 
 def parse_projects(repos_pom):
     logging.info(time.strftime("%c")+' traversing through projects')
@@ -100,6 +125,7 @@ def parse_js_projects(repos_js_dep):
                 aggregate_results.append(dependency_map)
     return aggregate_results
 
+
 def parse_js_aggregate(parsed_json):
     combined_result = []
     for res in parsed_json:
@@ -110,7 +136,6 @@ def parse_js_aggregate(parsed_json):
             data_map['version'] = res[keys]
             combined_result.append(data_map)
     return combined_result
-
 
 
 def process_gradle_projects(repos):
@@ -143,6 +168,7 @@ def process_js_projects(repos):
             repos_js.append(repo_map)
     return repos_js
 
+
 def read_js_dep_content(file_path):
     logging.info(time.strftime("%c")+' reading js dependency files content')
     json_res = []
@@ -155,6 +181,7 @@ def read_js_dep_content(file_path):
              data = []
     return json_res
 
+
 def read_pom_content(file_path):
     logging.info(time.strftime("%c")+' reading pom files content')
     file_object = open(file_path, "r+")
@@ -162,6 +189,7 @@ def read_pom_content(file_path):
     parsed = xmltodict.parse(content)
     parsed_json = json.loads(json.dumps(parsed))['project']
     return parsed_json
+
 
 def parse_aggregate(parsed_json):
     logging.info(time.strftime("%c")+ ' parsing and aggregating pom files')
@@ -189,12 +217,14 @@ def parse_aggregate(parsed_json):
         content_array.append(content)
     return content_array
 
+
 def filter_dependencies(repo):
     filtered_dependency = []
     for filter in repo['dependency_content']:
         if not 'content' in filter:
             filtered_dependency.append(filter)
     return filtered_dependency
+
 
 def get_es_project(config,results):
     returned_responses_collection = []
@@ -218,7 +248,9 @@ def get_es_project(config,results):
             collected_response['returned_res'] = returned_res
             returned_responses_collection.append(collected_response)
     return returned_responses_collection
-def makeEsUpdates(config,returned_responses):
+
+
+def _make_elasticsearch_updates(config, returned_responses):
     collected_ids = []
     collected_response = []
     configurations = config['config']
@@ -238,15 +270,16 @@ def makeEsUpdates(config,returned_responses):
     return collected_response
 
 
-def process_elasticSearch_update(config, results):
+def _process_elasticsearch_update(config, results):
     if config['update'] == 'results.out':
         logging.info(time.strftime("%c")+' Writing the result data to a local file results.out')
         write_results(config['update'], results)
     else:
         logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
         res_arr = get_es_project(config,results)
-        collected_response = makeEsUpdates(config,res_arr)
+        collected_response = _make_elasticsearch_updates(config, res_arr)
         display_stats(config, collected_response)
+
 
 def write_results(resultfile,results):
     file_object = open(resultfile, 'w')
@@ -255,6 +288,7 @@ def write_results(resultfile,results):
         file_object.write(json.dumps(res))
         file_object.write("\n")
 
+
 def display_stats(config, response_arr):
     logging.info(time.strftime("%c")+" ******The following "+str(len(response_arr)) + " projects have dependencies******")
     repos_just_updated = []
@@ -262,32 +296,36 @@ def display_stats(config, response_arr):
     for repo in response_arr:
         response = requests.get(configurations['stage_es_url']+'/projects/logs/'+repo['_id'])
         logging.info(json.loads(response.text))
-        if(repo['_shards']['successful'] == 1):
+
+        if repo['_shards']['successful'] == 1:
             repos_just_updated.append(json.loads(response.text))
 
-    if(len(repos_just_updated) > 0):
+    if len(repos_just_updated) > 0:
         logging.info("******The following projects are "+ str(len(repos_just_updated))+" just updated******")
         for repo in repos_just_updated:
             logging.info(repo)
     else:
         logging.info(time.strftime("%c")+" **** No Project is updated ****")
 
+
 def cleanup_after_update():
     clone_dir = os.getcwd() + '/cloned_projects/'
     logging.info(time.strftime("%c")+' cleaning up cloned projects after elasticsearch updates or written to a file')
     delete_directory(clone_dir)
 
+
 def automate_processes(config):
     logging.info(time.strftime("%c")+' Started')
-    repos = collect_repositries(config)
-    clone_projects(repos)
+    repos = collect_repositories(config)
+    clone_projects(config, repos)
     poms = process_cloned_projects(repos)
     res = parse_projects(poms)
     js_res = process_js_projects(repos)
     js_ret_res = parse_js_projects(js_res)
     combined_results = res + js_ret_res
-    process_elasticSearch_update(config,combined_results)
+    _process_elasticsearch_update(config,combined_results)
     cleanup_after_update()
+
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
