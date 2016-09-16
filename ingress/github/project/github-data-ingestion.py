@@ -21,6 +21,8 @@ ingest_logger = logging.getLogger('github-data-ingestion')
 #
 def _ingest_repo_data(config, orgs):
     repos_result = []
+    # TODO: Repo level but until we address this correctly pulling it out
+    num_releases = 0
 
     for org in orgs:
         repos_response = requests.get(org['repos_url'] + '?' + _get_auth_http_params(config))
@@ -29,58 +31,61 @@ def _ingest_repo_data(config, orgs):
 
         org_name = org['login']
         org_url = org['html_url']
+        org_type = org['type']
+        org_avatar_url = org['avatar_url']
 
         for repo in repos:
             repo_info = {}
-            repo_name = None
-            proj_desc = None
-            proj_lang = None
-            num_stars = None
-            num_watchers = None
-            num_forks = None
 
-            if repo['name'] is not None:
-                repo_name = repo['name']
-            if repo['description'] is not None:
-                proj_desc = repo['description']
-            if repo['language'] is not None:
-                proj_lang = repo['language']
-            if repo['stargazers_count'] is not None:
-                num_stars = repo['stargazers_count']
-            if repo['watchers_count'] is not None:
-                num_watchers = repo['watchers_count']
-            if repo['forks'] is not None:
-                num_forks = repo['forks']
+            contributors = _get_contributors_info(config, org, repo['name'])
+            readme_results = _get_readme_info(config, org, repo['name'])
+            watchers = _calculate_watchers(config, org, repo['name'])
 
-            contributors = _get_contributors_info(config, org, repo_name)
-            num_releases = _count_releases(config, org, repo_name)
-            readme_results = _get_readme_info(config, org, repo_name)
-
-            repo_info['repository'] = repo_name
+            repo_info['origin'] = config['env']
+            repo_info['repository'] = repo['name']
             repo_info['repository_url'] = repo['html_url']
-            repo_info['full_name'] = org_name + '/' + repo_name
-            repo_info['project_name'] = repo_name
+            repo_info['full_name'] = repo['full_name']
+            repo_info['project_name'] = repo['name']
 
             repo_info['organization'] = org_name
             repo_info['organization_url'] = org_url
+            repo_info['org_avatar_url'] = org_avatar_url
+            repo_info['org_type'] = org_type
 
-            repo_info['project_description'] = proj_desc
-            repo_info['language'] = proj_lang
-            repo_info['stars'] = num_stars
-            repo_info['watchers'] = num_watchers
+            # x languages_url
+            # x subscribers_url
+            # org description # need to restructure code to go at Orgs and Users separately
+            # x avatar_url for Org and Contributor
+            # x use full_name instead of constructing it
+            # x type
+            # updated_at or created_at for org
+            # x updated_at for repo
+            # x remove duplicate entry for repository and project_name
+            # x add repo origin (public or enterprise)
+
+            repo_info['project_description'] = repo['description']
+            repo_info['language'] = repo['language']
+            repo_info['languages'] = _get_repo_languages(config, org, repo['name'])
+            repo_info['stars'] = repo['stargazers_count']
+            repo_info['watchers'] = watchers
             repo_info['contributors'] = contributors['num_contributors']
             repo_info['commits'] = contributors['num_commits']
             repo_info['releases'] = num_releases
-            repo_info['forks'] = num_forks
-            repo_info['rank'] = num_stars + num_watchers + contributors['num_contributors'] + contributors['num_commits'] + num_releases
+            repo_info['forks'] = repo['forks']
+            repo_info['rank'] = _calculate_popular_rank(repo, watchers, contributors)
             repo_info['content'] = readme_results['readme_contents']
             repo_info['readme_url'] = readme_results['readme_url']
             repo_info['contributors_list'] = contributors['contributors']
-            repo_info['suggest'] = _get_suggest_info(repo_name, proj_desc)
+            repo_info['updated_at'] = repo['updated_at']
+            repo_info['suggest'] = _get_suggest_info(repo['name'], repo['description'])
 
             repos_result.append(repo_info)
 
     return repos_result
+
+
+def _calculate_popular_rank(repo, watchers, contributors):
+    return (repo['stargazers_count']*3) + (watchers*4) + (contributors['num_contributors']*5) + (contributors['num_commits'])
 
 
 def _process_enterprise_orgs_users(config):
@@ -91,10 +96,10 @@ def _process_enterprise_orgs_users(config):
     while True:
         orgs_response = requests.get(url)
         orgs = json.loads(orgs_response.text)
-        orgs_cnt += len(orgs)
         if not orgs:
             break
 
+        orgs_cnt += len(orgs)
         results.extend(_ingest_repo_data(config, orgs))
 
         # is there another page to pull?
@@ -130,7 +135,7 @@ def _get_public_orgs(config):
     return orgs_json
 
 
-#
+#G
 # The access method for github is different for each system.  Both modes should be accepted soon.
 #
 # If Enterprise then we use the Personal Access Token otherwise an OAuth token pair.
@@ -139,8 +144,7 @@ def _get_auth_http_params(config):
     if config['env'] == 'ENTERPRISE':
         return 'access_token=' + config['enterprise_github_access_token']
     else:
-        return 'client_id=' + config['github_oauth_client_id'] +\
-               '&client_secret=' + config['github_oauth_client_secret']
+        return 'access_token=' + config['public_github_access_token']
 
 
 #
@@ -153,37 +157,96 @@ def _get_github_url(config):
         return config['public_github_api_url']
 
 
+def _get_repo_languages(config, org, repo_name):
+    url = _get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name + '/languages?' +\
+          _get_auth_http_params(config)
+
+    languages_response = requests.get(url)
+    if languages_response == '':
+        return {}
+
+    return json.loads(languages_response.text)
+
 #
 # Calculate:
-#   Number of Commits by all Contributors
-#   Number of Contributors
+#   Total Commits (summation from all contributors)
+#   Total Contributors (including anonymous) see: https://developer.github.com/v3/repos/#list-contributors
 #   List of Contributors
 #
 def _get_contributors_info(config, org, repo_name):
-    contribs_response = requests.get(_get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name + '/contributors?anon=true&' + _get_auth_http_params(config))
+    url = _get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name +\
+          '/contributors?since=0&per_page=100&anon=true&' + _get_auth_http_params(config)
 
-    num_contributors = 0
     num_commits = 0
     contributor_list = []
-    if contribs_response.text != '':
-        contributors = json.loads(contribs_response.text)
+
+    while True:
+        contributors_response = requests.get(url)
+
+        # Something is always returned. 'None' and 'not' pass through but
+        # testing for empty prevents downstream errors.
+        if contributors_response.text == '':
+            break
+
+        contributors = json.loads(contributors_response.text)
+
+        if not contributors:
+            break
 
         for contributor in contributors:
-            num_contributors += 1
             num_commits += contributor['contributions']
-            contributor_info = {}
-            # If user is anonymous, they do not have
             if contributor['type'] == 'User':
-                contributor_info['username'] = contributor['login']
-                contributor_info['profile_url'] = contributor['html_url']
+                contributor_list.append({'username': contributor['login'],
+                                         'profile_url': contributor['html_url'],
+                                         'avatar_url': contributor['avatar_url'],
+                                         'user_type': contributor['type']})
             else:
-                contributor_info['username'] = contributor['name']
-                contributor_info['profile_url'] = None
+                contributor_list.append({'username': contributor['name'],
+                                         'profile_url': None,
+                                         'avatar_url': None,
+                                         'user_type': contributor['type']})
 
-            contributor_list.append(contributor_info)
+        # is there another page to pull?
+        if 'next' not in contributors_response.links:
+            break
 
-    return {'num_commits': num_commits, 'num_contributors': num_contributors, 'contributors': contributor_list}
+        url = contributors_response.links['next']['url']
 
+    return {'num_commits': num_commits, 'num_contributors': len(contributor_list), 'contributors': contributor_list}
+
+
+#
+# Calculate:
+#   Total Subscribers = Total Watchers
+#
+def _calculate_watchers(config, org, repo_name):
+    url = _get_github_url(config) + '/repos/' + org['login'] + '/' + repo_name + \
+          '/subscribers?since=0&per_page=100&' + _get_auth_http_params(config)
+
+    total_watchers = 0
+
+    while True:
+        watchers_response = requests.get(url)
+
+        # Something is always returned. 'None' and 'not' pass through but
+        # testing for empty prevents downstream errors.
+        if watchers_response.text == '':
+            break
+
+        watchers = json.loads(watchers_response.text)
+
+        if not watchers:
+            break
+
+        total_watchers += len(watchers)
+
+        # is there another page to pull?
+        if 'next' not in watchers_response.links:
+            break
+
+        url = watchers_response.links['next']['url']
+
+    return total_watchers
 
 #
 # Process README content and url
@@ -201,25 +264,14 @@ def _get_readme_info(config, org, repo_name):
     return readme_results
 
 
-def _get_suggest_info(repo_name, proj_desc):
+def _get_suggest_info(repo_name, repo_desc):
     _repo_name = repo_name if repo_name is not None else ''
-    _proj_desc = proj_desc if proj_desc is not None else ''
+    _repo_desc = repo_desc if repo_desc is not None else ''
 
     suggest = '{"input": ["' + sub("[^a-zA-Z0-9\s]", '', _repo_name) + '", "' + \
-              sub("[^a-zA-Z0-9\s]", '', _proj_desc) + '"], "output": "' + \
+              sub("[^a-zA-Z0-9\s]", '', _repo_desc) + '"], "output": "' + \
               sub("[^a-zA-Z0-9-\s]", '', _repo_name) + '"}'
     return json.loads(suggest)
-
-
-def _count_releases(config, org, repo_name):
-    releases = requests.get(_get_github_url(config) +
-                            '/repos/' +
-                            org['login'] + '/' + repo_name +
-                            '/releases?' +
-                            _get_auth_http_params(config))
-    releases = json.loads(releases.text)
-
-    return len(releases)
 
 
 def _write_data_to_file(config, data):
