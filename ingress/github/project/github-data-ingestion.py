@@ -20,7 +20,7 @@ ingest_logger = logging.getLogger('github-data-ingestion')
 #          Names of organizations or users which for Github are all Users by either of Type=User or Type=Organization
 #
 def _ingest_repo_data(config, orgs):
-    repos_result = []
+    projects = []
     # TODO: Repo level but until we address this correctly pulling it out
     num_releases = 0
 
@@ -29,59 +29,42 @@ def _ingest_repo_data(config, orgs):
         repos = json.loads(repos_response.text)
         ingest_logger.info(repos)
 
-        org_name = org['login']
-        org_url = org['html_url']
-        org_type = org['type']
-        org_avatar_url = org['avatar_url']
-
         for repo in repos:
-            repo_info = {}
+            project = {}
+
+            project['organization'] = repo['owner']['login']
+            project['organization_url'] = repo['owner']['html_url']
+            project['org_avatar_url'] = repo['owner']['avatar_url']
+            project['org_type'] = repo['owner']['type']
 
             contributors = _get_contributors_info(config, org, repo['name'])
             readme_results = _get_readme_info(config, org, repo['name'])
             watchers = _calculate_watchers(config, org, repo['name'])
 
-            repo_info['origin'] = config['env']
-            repo_info['repository'] = repo['name']
-            repo_info['repository_url'] = repo['html_url']
-            repo_info['full_name'] = repo['full_name']
-            repo_info['project_name'] = repo['name']
+            project['origin'] = config['env']
+            project['repository'] = repo['name']
+            project['repository_url'] = repo['html_url']
+            project['full_name'] = repo['full_name']
+            project['project_name'] = repo['name']
+            project['project_description'] = repo['description']
+            project['language'] = repo['language']
+            project['languages'] = _get_repo_languages(config, org, repo['name'])
+            project['stars'] = repo['stargazers_count']
+            project['watchers'] = watchers
+            project['contributors'] = contributors['num_contributors']
+            project['commits'] = contributors['num_commits']
+            project['releases'] = num_releases
+            project['forks'] = repo['forks']
+            project['rank'] = _calculate_popular_rank(repo, watchers, contributors)
+            project['content'] = readme_results['readme_contents']
+            project['readme_url'] = readme_results['readme_url']
+            project['contributors_list'] = contributors['contributors']
+            project['updated_at'] = repo['updated_at']
+            project['suggest'] = _get_suggest_info(repo['name'], repo['description'])
 
-            repo_info['organization'] = org_name
-            repo_info['organization_url'] = org_url
-            repo_info['org_avatar_url'] = org_avatar_url
-            repo_info['org_type'] = org_type
+            projects.append(project)
 
-            # x languages_url
-            # x subscribers_url
-            # org description # need to restructure code to go at Orgs and Users separately
-            # x avatar_url for Org and Contributor
-            # x use full_name instead of constructing it
-            # x type
-            # updated_at or created_at for org
-            # x updated_at for repo
-            # x remove duplicate entry for repository and project_name
-            # x add repo origin (public or enterprise)
-
-            repo_info['project_description'] = repo['description']
-            repo_info['language'] = repo['language']
-            repo_info['languages'] = _get_repo_languages(config, org, repo['name'])
-            repo_info['stars'] = repo['stargazers_count']
-            repo_info['watchers'] = watchers
-            repo_info['contributors'] = contributors['num_contributors']
-            repo_info['commits'] = contributors['num_commits']
-            repo_info['releases'] = num_releases
-            repo_info['forks'] = repo['forks']
-            repo_info['rank'] = _calculate_popular_rank(repo, watchers, contributors)
-            repo_info['content'] = readme_results['readme_contents']
-            repo_info['readme_url'] = readme_results['readme_url']
-            repo_info['contributors_list'] = contributors['contributors']
-            repo_info['updated_at'] = repo['updated_at']
-            repo_info['suggest'] = _get_suggest_info(repo['name'], repo['description'])
-
-            repos_result.append(repo_info)
-
-    return repos_result
+    return projects
 
 
 def _calculate_popular_rank(repo, watchers, contributors):
@@ -89,17 +72,30 @@ def _calculate_popular_rank(repo, watchers, contributors):
 
 
 def _process_enterprise_orgs_users(config):
-    url = _get_github_url(config) + '/users?' + _get_auth_http_params(config) + '&since=0&per_page=100'
+    org_results = _get_enterprise_orgs(config)
+    user_results = _get_enterprise_users(config)
+
+    ingest_logger.info('Total Orgs (Organizations and Users) Processed: %s', org_results['count'] + user_results['count'])
+    ingest_logger.info('Total Repos Processed: %s', len(org_results) + len(user_results))
+
+    total_results = org_results['results']
+    total_results.extend(user_results['results'])
+
+    return total_results
+
+
+def _get_enterprise_orgs(config):
+    url = _get_github_url(config) + '/organizations?' + _get_auth_http_params(config) + '&since=0&per_page=100'
 
     results = []
-    orgs_cnt = 0
+    orgs_count = 0
     while True:
         orgs_response = requests.get(url)
         orgs = json.loads(orgs_response.text)
         if not orgs:
             break
 
-        orgs_cnt += len(orgs)
+        orgs_count += len(orgs)
         results.extend(_ingest_repo_data(config, orgs))
 
         # is there another page to pull?
@@ -108,10 +104,37 @@ def _process_enterprise_orgs_users(config):
 
         url = orgs_response.links['next']['url']
 
-    ingest_logger.info('Total Orgs (Organizations and Users) Processed: %s', orgs_cnt)
-    ingest_logger.info('Total Repos Processed: %s', len(results))
+    return {"results": results, "count": orgs_count}
 
-    return results
+
+def _get_enterprise_users(config):
+    url = _get_github_url(config) + '/users?' + _get_auth_http_params(config) + '&since=0&per_page=100'
+    results = []
+    users_count = 0
+
+    while True:
+        filtered_users = []
+        users_response = requests.get(url)
+        users = json.loads(users_response.text)
+
+        if not users:
+            break
+
+        # filter Organizations since we've already handled that elsewhere
+        for user in users:
+            if user['type'] == 'User':
+                filtered_users.append(user)
+
+        users_count += len(filtered_users)
+        results.extend(_ingest_repo_data(config, filtered_users))
+
+        # is there another page to pull?
+        if 'next' not in users_response.links:
+            break
+
+        url = users_response.links['next']['url']
+
+    return {"results": results, "count": users_count}
 
 
 def _process_public_orgs(config):
@@ -128,7 +151,7 @@ def _process_public_orgs(config):
 def _get_public_orgs(config):
     orgs_json = []
     for org in config['public_orgs']:
-        orgs_response = requests.get(_get_github_url(config) + '/users/' + org + '?' + _get_auth_http_params(config))
+        orgs_response = requests.get(_get_github_url(config) + '/orgs/' + org + '?' + _get_auth_http_params(config))
         orgs_json.append(json.loads(orgs_response.text))
 
     ingest_logger.info(orgs_json)
