@@ -297,9 +297,21 @@ def _get_suggest_info(repo_name, repo_desc):
     return json.loads(suggest)
 
 
+#
+# Writes the file in the Elastic Search Bulk API format.
+#
+# Each command must be on a single line.
+# Each JSON data document must be on a single line.
+# Last line of file must be a CR/LF
+#
+# All whitespace is removed from the JSON document.
+#
 def _write_data_to_file(config, data):
     with open(config['data_output_file'], "w") as outfile:
-        json.dump(data, outfile, indent=4)
+        for d in data:
+            outfile.write('{"index": {}}\n')
+            json.dump(d, outfile, separators=(',', ':'))
+            outfile.write('\n')
 
 
 #
