@@ -2,9 +2,8 @@ import argparse
 import base64
 import json
 import logging
-from re import sub
-
 import requests
+from re import sub
 
 
 ingest_logger = logging.getLogger('github-data-ingestion')
@@ -304,12 +303,16 @@ def _calculate_autosuggest(repo_name, repo_desc, org_name, languages, contributo
     for contributor in contributors:
         _contributors.append(contributor['username'])
 
-    _suggestions = '[{"input": ["' + _repo_name + '", "' + _repo_desc + '"], ' + '"output": "' + _repo_name + '"},'
-    _suggestions += '{"input": "' + _org_name + '", ' + '"output": "' + _repo_name + '"},'
-    _suggestions += '{"input": ' + json.dumps(_languages) + ', ' + '"output": "' + _repo_name + '"},'
-    _suggestions += '{"input": ' + json.dumps(_contributors) + ', ' + '"output": "' + _repo_name + '"}]'
+    _suggestions = '[{"input": ["' + _replace_punctuation(_repo_name) + '", "' + _replace_punctuation(_repo_desc) + '"], ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": "' + _replace_punctuation(_org_name) + '", ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": ' + json.dumps(_languages) + ', ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": ' + json.dumps(_contributors) + ', ' + '"output": "' + _replace_punctuation(_repo_name) + '"}]'
 
     return json.loads(_suggestions)
+
+
+def _replace_punctuation(data):
+    return sub("[^-_a-zA-Z0-9\s]", '', data)
 
 
 #
