@@ -2,9 +2,8 @@ import argparse
 import base64
 import json
 import logging
-from re import sub
-
 import requests
+from re import sub
 
 
 ingest_logger = logging.getLogger('github-data-ingestion')
@@ -60,7 +59,11 @@ def _ingest_repo_data(config, orgs):
             project['readme_url'] = readme_results['readme_url']
             project['contributors_list'] = contributors['contributors']
             project['updated_at'] = repo['updated_at']
-            project['suggest'] = _get_suggest_info(repo['name'], repo['description'])
+            project['suggest'] = _calculate_autosuggest(repo['name'],
+                                                        repo['description'],
+                                                        project['organization'],
+                                                        project['languages'],
+                                                        project['contributors_list'])
 
             projects.append(project)
 
@@ -287,14 +290,29 @@ def _get_readme_info(config, org, repo_name):
     return readme_results
 
 
-def _get_suggest_info(repo_name, repo_desc):
+def _calculate_autosuggest(repo_name, repo_desc, org_name, languages, contributors):
     _repo_name = repo_name if repo_name is not None else ''
     _repo_desc = repo_desc if repo_desc is not None else ''
+    _org_name = org_name if org_name is not None else ''
+    _languages = []
+    _contributors = []
 
-    suggest = '{"input": ["' + sub("[^a-zA-Z0-9\s]", '', _repo_name) + '", "' + \
-              sub("[^a-zA-Z0-9\s]", '', _repo_desc) + '"], "output": "' + \
-              sub("[^a-zA-Z0-9-\s]", '', _repo_name) + '"}'
-    return json.loads(suggest)
+    for language in languages.keys():
+        _languages.append(language)
+
+    for contributor in contributors:
+        _contributors.append(contributor['username'])
+
+    _suggestions = '[{"input": ["' + _replace_punctuation(_repo_name) + '", "' + _replace_punctuation(_repo_desc) + '"], ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": "' + _replace_punctuation(_org_name) + '", ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": ' + json.dumps(_languages) + ', ' + '"output": "' + _replace_punctuation(_repo_name) + '"},'
+    _suggestions += '{"input": ' + json.dumps(_contributors) + ', ' + '"output": "' + _replace_punctuation(_repo_name) + '"}]'
+
+    return json.loads(_suggestions)
+
+
+def _replace_punctuation(data):
+    return sub("[^-_a-zA-Z0-9\s]", '', data)
 
 
 #
