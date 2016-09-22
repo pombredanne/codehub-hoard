@@ -59,14 +59,14 @@ def process_elasticSearch_update(results, config):
         logging.info(time.strftime("%c")+' Writing the result data to a local file results.out')
         write_results(config['update'], results)
     else:
-        logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
+        logging.info(time.strftime("%c")+' talking to ES and adding project metrics attribute with processed data')
         res_arr = get_es_project(config,results)
         collected_response = makeEsUpdates(config,res_arr)
         display_stats(config, collected_response)
 
 def write_results(resultfile,results):
     file_object = open(os.getcwd()+"/"+resultfile, 'w')
-    file_object.write("\t******************** The following Projects have dependencies ********************************\n\n")
+    file_object.write("\t******************** The following Projects have health metrics ********************************\n\n")
     for res in results:
         file_object.write(json.dumps(res))
         file_object.write("\n")
@@ -109,10 +109,12 @@ def automate_processes(config):
     res_dir = os.getcwd()+"/metric_result.json"
     if os.path.exists(res_dir):
         results = read_result_file(res_dir)
+        print(results)
         process_elasticSearch_update(results, config)
     else:
         automate_sonar_processing.automate_processes(config)
         results = read_result_file(res_dir)
+        print(results)
         process_elasticSearch_update(results, config)
 
     #cleanup_after_update()
