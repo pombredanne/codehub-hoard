@@ -105,7 +105,7 @@ def build_sonar_project_config(repos_src,config):
 
 def writeToConfigFile(repo):
     aggregated_src = ''
-    exclusions = 'system/**, test/**, /img/**, /logs/**, /fonts/**, **/generated-sources/**, **/packages/**, **/docs/**, **/node_modules/**, **/bower_components/**,**/dist/**,**/unity.js,**/bootstrap.css, **/*.rb'
+    exclusions = '**/system/**, **/test/**, **/img/**, **/logs/**, **/fonts/**, **/generated-sources/**, **/packages/**, **/docs/**, **/node_modules/**, **/bower_components/**,**/dist/**,**/unity.js,**/bootstrap.css, **/*.rb, **/tools/**'
     for src in repo['src_list']:
         aggregated_src = src + "," + aggregated_src
     file_object = open(repo['root_dir']+"/sonar-project.properties", 'w')
