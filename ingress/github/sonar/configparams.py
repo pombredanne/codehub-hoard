@@ -30,6 +30,10 @@ def _read_config(args):
         config['install_sonar_server'] = args.install_sonar_server
     if ('install_sonar_runner' in args) and (args.install_sonar_server is not None):
         config['install_sonar_runner'] = args.install_sonar_runner
+    if 'clone' in args:
+        config['clone'] = args.clone
+    # else:
+    #     config['clone'] = False
 
     _convert_public_orgs(config)
     _convert_sonar_metrics(config)
@@ -53,7 +57,9 @@ def _parse_commandline():
 
     parser.add_argument('-env', '--env',
                         help='the config file to use for the program [default: ingest.conf]')
-
+    parser.add_argument('-clone', '--clone',
+                        help='repos will either be cloned or used the exisitng ones [default: false]',
+                        action='store_true')
     parser.add_argument('-update', '--update',
                         help='dependencies result will either be written to a file or ES will be updated [default: results.out]',
                         action='store_true')

@@ -103,10 +103,7 @@ def read_result_file(res_dir):
              data = []
     return json_res
 
-
-def automate_processes(config):
-    sonar_dir = os.getcwd()+"/**/sonar-runner"
-    res_dir = os.getcwd()+"/metric_result.json"
+def determine_results(res_dir):
     if os.path.exists(res_dir):
         results = read_result_file(res_dir)
         print(results)
@@ -117,6 +114,12 @@ def automate_processes(config):
         print(results)
         process_elasticSearch_update(results, config)
 
+def automate_processes(config):
+    sonar_dir = os.getcwd()+"/**/sonar-runner"
+    res_dir = os.getcwd()+"/metric_result.json"
+    #determine_results(res_dir)
+    if not os.path.exists(res_dir):
+        automate_sonar_processing.automate_processes(config)
     #cleanup_after_update()
 
 if __name__ == "__main__":

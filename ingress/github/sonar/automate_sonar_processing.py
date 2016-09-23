@@ -216,6 +216,23 @@ def create_result_json(filtered_repo, result_path):
     with open(result_path, 'w') as outfile:
         json.dump(filtered_repo, outfile, indent=4, sort_keys=True, separators=(',', ':'))
     return result_path
+def cleanup_after_update():
+    clone_dir = os.getcwd() + '/cloned_projects/'
+    logging.info(time.strftime("%c")+' cleaning up cloned projects after elasticsearch updates or written to a file')
+    delete_directory(clone_dir)
+
+def get_final_results(config):
+     configurations = config['config']
+     sonar_dir = os.getcwd()+"/**/sonar-runner"
+     repos = collect_repositries(config)
+     if(configurations['clone']):
+         cleanup_after_update()
+         clone_projects(repos,config)
+     processed_repos = process_cloned_projects(repos)
+     build_sonar_project_config(processed_repos,config)
+     filtered_repo = make_sonar_api_call(processed_repos,config)
+     print(filtered_repo)
+     return filtered_repo
 
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
@@ -232,4 +249,5 @@ def automate_processes(config):
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
     config = configparams.main(parsed)
-    automate_processes(config)
+    get_final_results(config)
+    #automate_processes(config)

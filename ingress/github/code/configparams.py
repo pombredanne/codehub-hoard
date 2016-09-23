@@ -23,17 +23,20 @@ def _read_config(args):
         config['env'] = args.env.upper()
     else:
         config['env'] = 'PUBLIC'
+        
+    if 'clone' in args:
+        config['clone'] = args.clone
 
     _convert_public_orgs(config)
 
     return config
 
 def _write_update(args):
-    file_or_es = 'results.out'
 
-    if args.update is not None:
+    if not args.update:
+        file_or_es = 'dependency_results.out'
+    else:
         file_or_es = args.update
-
     return file_or_es
 
 
@@ -47,7 +50,9 @@ def _parse_commandline():
     parser.add_argument('-update', '--update',
                         help='dependencies result will either be written to a file or ES will be updated [default: results.out]',
                         action='store_true')
-
+    parser.add_argument('-clone', '--clone',
+                        help='repos will either be cloned or used the exisitng ones [default: false]',
+                        action='store_true')
     return parser.parse_args()
 
 
