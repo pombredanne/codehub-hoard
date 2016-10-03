@@ -107,11 +107,17 @@ def read_result_file(res_dir):
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
     res_dir = os.getcwd()+"/metric_result.json"
-    if os.path.exists(res_dir):
-        results = read_result_file(res_dir)
+    res_pub_dir = os.getcwd()+"/metric_pub_result.json"
+    res_ent_dir = os.getcwd()+"/metric_ent_result.json"
+    if os.path.exists(res_pub_dir):
+        results = read_result_file(res_pub_dir)
         print(results)
         process_elasticSearch_update(results, config)
-    else:
+    if os.path.exists(res_ent_dir):
+        results = read_result_file(res_ent_dir)
+        print(results)
+        process_elasticSearch_update(results, config)
+    if not (os.path.exists(res_pub_dir) and os.path.exists(res_ent_dir)):
         automate_sonar_processing.automate_processes(config)
         results = read_result_file(res_dir)
         print(results)
