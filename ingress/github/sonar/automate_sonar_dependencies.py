@@ -12,10 +12,8 @@ def install_sonar_server_dependencies(config):
     configurations = config['config']
     if(configurations['install_sonar_server']):
         install_sonar_server(config)
-
 def install_sonar_server(config):
     configurations = config['config']
-    print(configurations)
     curr_dir = os.getcwd()
     run(["ls","-l"])
     if not os.path.exists("sonar_server_dir"):
@@ -30,15 +28,18 @@ def install_sonar_server(config):
     if os.path.exists("sonarqube-6.0"):
         server_dir_linux = "sonarqube-6.0/bin/linux-x86-64/sonar.sh"
         server_dir_macos = "sonarqube-6.0/bin/macosx-universal-64/sonar.sh"
-        plugins_dir = "sonarqube-6.0/extensions/plugins/"
-        sonar_installed_plugins = "/home/ec2-user/sonar_installed_plugins/"
-        if not os.path.exists(sonar_installed_plugins):
-            os.makedirs(sonar_installed_plugins)
-        run([server_dir_linux,"restart"],check=True)
-        copy_tree(plugins_dir,sonar_installed_plugins)
-        if(configurations['install_plugins']):
-            copy_tree(sonar_installed_plugins,plugins_dir)
-    os.chdir("..")
+        run([server_dir_linux,"stop"],check=True)
+        run([server_dir_linux,"start"],check=True)
+
+def process_install_plugins(config):
+    configurations = config['config']
+    plugins_dir = "sonarqube-6.0/extensions/plugins/"
+    sonar_installed_plugins = "/home/ec2-user/sonar_installed_plugins/"
+    if not os.path.exists(sonar_installed_plugins):
+        os.makedirs(sonar_installed_plugins)
+    copy_tree(plugins_dir,sonar_installed_plugins)
+    if(configurations['install_plugins']):
+        copy_tree(sonar_installed_plugins,plugins_dir)
 
 def install_sonar_runner_dependencies(config):
     configurations = config['config']
@@ -62,7 +63,7 @@ def install_sonar_runner(config):
 def automate_processes(config):
     install_sonar_server_dependencies(config)
     install_sonar_runner_dependencies(config)
-
+    process_install_plugins(config)
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
