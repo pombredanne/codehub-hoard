@@ -16,8 +16,7 @@ class HttpUtilsSpec extends BaseSpec{
   }
 
   "valid url" should "not contain stage error in response" in {
-    val url = "https://api.github.com/repos/Project-Heimdall/heimdall-devops/contents/README.md?access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2"
-    //val url = "https://github.boozallencsn.com/api/v3/organizations?access_token=785cfc22173deb5d3ebe0903e5d96b4238f57347"
+    val url = "https://api.github.com"
     val js = parse(HttpUtils.getResponse(url))
     val fld = js findField {
       case JField(STAGE_ERROR, _) => true
@@ -37,25 +36,20 @@ class HttpUtilsSpec extends BaseSpec{
   }
 
   "Response body" should "be returned" in {
-    //HttpUtils.getResponseWithPagedData("https://github.boozallencsn.com/api/v3/repos/BAH-Internal/Tolga-Demo-Project/contributors?since=0&per_page=100&access_token=785cfc22173deb5d3ebe0903e5d96b4238f57347", false)
-    HttpUtils.getResponseWithPagedData("https://github.boozallencsn.com/api/v3/repos/BAH-Internal/Tolga-Demo-Project/contents/README.md?access_token=785cfc22173deb5d3ebe0903e5d96b4238f57347", false)
+    HttpUtils.getResponseWithPagedData("https://", false)
   }
 
   "test body" should "be returned" in {
-    //val json = HttpUtils.getResponseWithPagedData("https://api.github.com/repos/elastic/beat123s-packer/subscribers?since=0&per_page=5&access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2", true)
-    val json = HttpUtils.getResponseWithPagedData("https://github.boozallencsn.com/api/v3/organizations?since=0&per_page=100&access_token=785cfc22173deb5d3ebe0903e5d96b4238f57347", true)
+    val json = HttpUtils.getResponseWithPagedData("https://", true)
     println(json)
     println("Count" + json.length)
 
   }
 
-
-
-
   "Response body and paging header" should "be returned" in {
     //val mockUtil = mock[IngestUtil]
 
-    val result = HttpUtils.getResponseWithPagedData("https://api.github.com/repos/elastic/elasticsearch.github.com/contributors?since=0&per_page=100&anon=true&access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2", true)
+    val result = HttpUtils.getResponseWithPagedData("https://", true)
     println(result)
   }
 }

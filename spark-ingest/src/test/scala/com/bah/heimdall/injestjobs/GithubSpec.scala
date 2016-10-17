@@ -14,13 +14,13 @@ import scala.collection.mutable.ArrayBuffer
 
 class GithubSpec extends BaseSparkSpec with Matchers {
   val json = "{\"id\": 60997192, \"name\": \"archive-chorus-uidesigns\",\"owner\": {\"login\": \"Project-Heimdall\", \"id\": 18699526,\"avatar_url\": \"https://avatars.githubusercontent.com/u/18699526?v=3\"}},\n{\"id\": 66205992, \"name\": \"heimdall-devops\",\"owner\": {\"login\": \"Project-Heimdall\",\"id\": 18699526,\"avatar_url\": \"https://avatars.githubusercontent.com/u/18699526?v=3\"}}"
-  val orgUrl = "https://api.github.com/users/project-heimdall?access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2"
+  val orgUrl = "https:"
 
   implicit val formats = DefaultFormats
 
   val public_github_api_url = "https://api.github.com"
   val orgs = List("project-heimdall", "elastic")
-  val accessToken = "access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2"
+  val accessToken = ""
 
 
   "Contributor Json" should "be built" in {
@@ -112,7 +112,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
   "Orgs Url" should "be loaded from config" in {
     val appConf = AppConfig
     val orgs = Github.getPublicOrgsList()
-    orgs should equal (Array("https://api.github.com/users/project-heimdall?access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2", "https://api.github.com/users/elastic?access_token=7547b53ecee4ed32f8e14c6a84c056b935531dd2"))
+    orgs should equal (Array("https://", "https://"))
   }
 
   "Read me json" should "be parsed correctly" in {

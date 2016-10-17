@@ -7,7 +7,13 @@ implicit val formats = DefaultFormats
 
 val languages = """{"Python":49623,"Shell":1717}"""
 
-val langKeys = parse(languages).values
+val langKeys: Map[String, String] = parse(languages).mapField( k =>{
+  (k._1, k._2)}).extract[Map[String, String]]
+
+val keysSuggest = write(langKeys.keySet)
+
+
+
 
 val test = List("1","2","3")
 

@@ -160,14 +160,14 @@ object Github {
         val cType = (contributorJson \ "type").extract[String]
         numCommits += (contributorJson \ "contributions").extract[Int]
         if (cType == "User")
-          Contributor((contributorJson \ "login").extract[String],
+            Contributor((contributorJson \ "login").extract[String],
             (contributorJson \ "html_url").extract[String],
             (contributorJson \ "avatar_url").extract[String],
             (contributorJson \ "type").extract[String])
         else Contributor((contributorJson \ "login").extract[String],
-          (contributorJson \ "html_url").extract[String],
-          (contributorJson \ "avatar_url").extract[String],
-          (contributorJson \ "type").extract[String])
+            (contributorJson \ "html_url").extract[String],
+            (contributorJson \ "avatar_url").extract[String],
+            (contributorJson \ "type").extract[String])
       })
       contributors.toList
     }
@@ -205,18 +205,21 @@ object Github {
                        orgName:String,
                        languages:String,
                        contributors:List[Contributor]): String ={
-    //val langKeys = getJson(languages).map(lang => lang.values)
+    val langKeys: Map[String, String] = parse(languages).mapField( k =>{
+      (k._1, k._2)
+    }).extract[Map[String, String]]
+    val keysSuggest = write(langKeys.keySet)
     val contribNames = contributors.map(contrib => {
       contrib.username
     })
     val suggestContributors : JArray = contribNames.toSeq
-
     val repoNameClean = replacePunctuation(repoName)
     val repoDescClean = replacePunctuation(repoDesc)
+
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
     autoSuggestFields += SuggestField(s"[$repoNameClean,$repoDescClean]",repoNameClean )
     autoSuggestFields += SuggestField(repoName, repoNameClean)
-    autoSuggestFields += SuggestField(languages, repoNameClean)
+    autoSuggestFields += SuggestField(keysSuggest, repoNameClean)
     autoSuggestFields += SuggestField(write(suggestContributors), repoNameClean)
     write(Suggest(autoSuggestFields.toList))
   }
