@@ -44,9 +44,8 @@ object Github {
       AppConfig.envType = ENTERPRISE
       val orgTypeList = getEnterpriseOrgTypesList
       val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
-      println("** Enterprise Orgs List **")
-      orgsList.foreach(println(_))
-      pullData(orgUrlsRdd).saveAsTextFile(outPath)
+      val orgsRdd = sc.parallelize(orgsList)
+      pullData(orgsRdd).saveAsTextFile(outPath)
     }else if(runEnv == ALL){
       //AppConfig.envType = PUBLIC
       //val orgUrlsRdd = sc.parallelize(getPublicOrgsList)
@@ -226,7 +225,3 @@ object Github {
     value.replaceAll("[^-_a-zA-Z0-9\\s]", "")
   }
 }
-/*"suggest":[{"input":["heimdall-hoard",""],"output":"heimdall-hoard"},
-           {"input":"Stage","output":"heimdall-hoard"},
-           {"input":[],"output":"heimdall-hoard"},
-           {"input":[],"output":"heimdall-hoard"}]*/
