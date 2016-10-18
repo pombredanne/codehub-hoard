@@ -24,7 +24,7 @@ DEXI_URL=$4
 rm -rf venv
 rm ingress/github/project/organization_info.json ingress/github/project/output.log
 rm ingress/github/code/project_dependency.log
-rm egress/dexi/data-from-es-*.json
+rm data-from-es-*.json
 virtualenv venv
 source venv/bin/activate
 
