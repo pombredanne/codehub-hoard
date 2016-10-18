@@ -17,6 +17,7 @@ INDEX=projects
 
 # Deleete Indices
 curl -XDELETE http://$HOST:$PORT/$INDEX
+./create-search-index.sh $HOST
 ./load-search-data.sh $HOST $DATA_FILE
 
 exit $SUCCESS
