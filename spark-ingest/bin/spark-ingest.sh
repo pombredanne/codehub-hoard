@@ -6,4 +6,4 @@ JOB_DIR="/home/ec2-user/dev/spark-ingest"
 INGEST_OUTPUT_DIR="/home/ec2-user/dev/data/process/input/github"
 
 
-$SPARK_HOME_DIR/bin/spark-submit --class com.bah.heimdall.ingestjobs.Github --master local --deploy-mode client --executor-memory 3g --name ProjectsIngest $JOB_DIR/spark-ingest-1.0-SNAPSHOT.jar $JOB_DIR/conf/application.conf $INGEST_OUTPUT_DIR
+$SPARK_HOME_DIR/bin/spark-submit --class com.bah.heimdall.ingestjobs.Github --master local --deploy-mode client --executor-memory 3g --name ProjectsIngest $JOB_DIR/spark-ingest-1.0-SNAPSHOT.jar $JOB_DIR/config/application.conf $INGEST_OUTPUT_DIR

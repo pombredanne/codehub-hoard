@@ -1,7 +1,6 @@
-package com.bah.heimdall.process
+package com.bah.heimdall.examples
 
 import com.bah.heimdall.BaseSparkSpec
-import org.apache.spark.sql.SQLContext
 import org.scalatest.Matchers
 
 

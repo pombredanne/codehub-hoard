@@ -2,7 +2,8 @@ package com.bah.heimdall.ingestjobs
 
 object Project {
   case class Org(organization:String, organization_url:String, org_avatar_url:String, org_type:String)
-  case class OrgRepo(id:String,
+  case class OrgRepo(stage_source:String,
+                     id:String,
                      organization:Org,
                      origin:String,
                      repository:String,

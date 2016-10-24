@@ -24,4 +24,22 @@ object AppConstants {
   val PUBLIC = "PUBLIC"
   val ENTERPRISE = "ENTERPRISE"
   val ALL = "ALL"
+  val SRC_GITHUB = "GITHUB"
+
+  //Kafka
+  val KAFKA_BOOTSTRAP_SERVERS = "ingest.kafka.bootstrap_servers"
+  //Producer
+  val KAFKA_ACKS = "ingest.kafka.producer.acks"
+  val KAFKA_RETRIES = "ingest.kafka.producer.retries"
+  val KAFKA_BATCH_SIZE = "ingest.kafka.producer.batch_size"
+  val KAFKA_BUFFER_MEMORY = "ingest.kafka.producer.buffer_memory"
+  val KAFKA_PRODUCER_TIMEOUT = "ingest.kafka.producer.timeout"
+  //Consumer
+  val KAFKA_GROUP_ID = "ingest.kafka.consumer.group_id"
+  val KAFKA_ENABLE_AUTO_COMMIT = "ingest.kafka.consumer.enable_auto_commit"
+  val KAFKA_AUTO_COMMIT_INTERVAL_MS = "ingest.kafka.consumer.auto_commit_interval_ms"
+  val KAFKA_SESSION_TIMEOUT_MS = "ingest.kafka.consumer.session_timeout_ms"
+  //Ingest Topics
+  val INGEST_COMPLETION_TOPIC = "ingest.kafka.completion_topic"
+
 }

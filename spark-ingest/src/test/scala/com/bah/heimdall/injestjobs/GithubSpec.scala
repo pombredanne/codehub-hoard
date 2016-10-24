@@ -23,7 +23,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
   val accessToken = ""
 
 
-  "Contributor Json" should "be built" in {
+  "Contributor Json" should "return Contributor objects and count total num of commits" in {
     val contributorsJson =
         """[{"login": "kimchy",
         "id": 41300,
@@ -33,7 +33,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
         "type": "User",
         "site_admin": false,
         "contributions": 847},
-        {"login": "clintongormley",
+        {"login": "abcd",
         "id": 56599,
         "avatar_url": "https://avatars.githubusercontent.com/u/56599?v=3",
         "url": "https://api.github.com/users/clintongormley",
@@ -45,9 +45,13 @@ class GithubSpec extends BaseSparkSpec with Matchers {
 
     var contributors = ArrayBuffer.empty[JValue]
     contributors ++= JsonUtils.getJson(contributorsJson).children
-    val (result, numCommits) = Github.buildContributors(contributors)
-    println(result.toString())
+    val (resultContribs, numCommits) = Github.buildContributors(contributors)
+    println(resultContribs.toString())
     assert(numCommits == 1048)
+    val users = List("kimchy","abcd")
+    resultContribs.foreach(f => {
+      assert(users.contains(f.username))
+    })
   }
 
   "Full org Json" should "be returned" in {

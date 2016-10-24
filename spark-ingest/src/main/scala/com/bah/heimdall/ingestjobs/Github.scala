@@ -1,6 +1,8 @@
 package com.bah.heimdall.ingestjobs
 
-import com.bah.heimdall.common.{AppConfig, JsonUtils}
+import java.util.Date
+
+import com.bah.heimdall.common.{AppConfig, JsonUtils, KafkaProducer}
 import com.bah.heimdall.common.AppConstants._
 import com.bah.heimdall.common.JsonUtils._
 import com.bah.heimdall.common.HttpUtils._
@@ -27,11 +29,13 @@ object Github {
     }
 
     val configFile = args(0)
-    val outPath = args(1)
-
     AppConfig(configFile)
+    val batchId = new Date().getTime();
+    val outPath = args(1) + "/"+ batchId
+    val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
+
     //local mode
-    val sc = new SparkContext(new SparkConf().setAppName("Process Project Data").setMaster("local[1]"))
+    val sc = new SparkContext(new SparkConf().setAppName("Ingest Project Data").setMaster("local[1]"))
 
     val runEnv = AppConfig.conf.getString(RUN_ENV)
     println(s"Project run environment is set to $runEnv")
@@ -47,11 +51,22 @@ object Github {
       val orgsRdd = sc.parallelize(orgsList)
       pullData(orgsRdd).saveAsTextFile(outPath)
     }else if(runEnv == ALL){
-      //AppConfig.envType = PUBLIC
-      //val orgUrlsRdd = sc.parallelize(getPublicOrgsList)
-      println("** ALL Orgs List **")
-      //orgUrlsRdd.foreach(println(_))
+      AppConfig.envType = PUBLIC
+      val orgUrlsRdd = sc.parallelize(getPublicOrgsList)
+      val pubOrgsRdd = orgUrlsRdd.map(getOrgData(_))
+      val pubOutRdd = pullData(pubOrgsRdd)
+
+      AppConfig.envType = ENTERPRISE
+      val orgTypeList = getEnterpriseOrgTypesList
+      val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
+      val entOrgsRdd = sc.parallelize(orgsList)
+      val entOutRdd = pullData(entOrgsRdd)
+      pubOutRdd.union(entOutRdd).saveAsTextFile(outPath)
     }
+    //Write completion message
+    val producer = KafkaProducer(AppConfig.conf)
+    producer.sendMessageBlocking(completeTopic, batchId.toString, batchId.toString, AppConfig.conf)
+    producer.close()
   }
 
   def isPublic(env:String) = (env == "PUBLIC")
@@ -112,6 +127,7 @@ object Github {
     val orgLogin = (orgJson \ "login").extract[String]
     val orgId = (orgJson \ "id").extract[String]
     val repoName = (repoJson \ "name").extract[String]
+    val repoDesc = (repoJson \ "description").extract[String]
     //Get list properties
     val contributorsJson = getPagedRepoProperties(orgLogin, repoName, "contributors")
     val (contributors, numCommits) = buildContributors(contributorsJson)
@@ -124,17 +140,18 @@ object Github {
     val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
 
       //Build repo structure
-    val orgRepo = OrgRepo(orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
+    val orgRepo = OrgRepo(SRC_GITHUB,
+      orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
       Org((repoJson \ "owner" \ "login").extract[String],
           (repoJson \ "owner" \ "html_url").extract[String],
           (repoJson \ "owner" \ "avatar_url").extract[String],
           (repoJson \ "owner" \ "type").extract[String]),
-      "public", //TODO: pull from config?
-      (repoJson \ "name").extract[String],
+      AppConfig.conf.getString(RUN_ENV),
+      repoName,
       (repoJson \ "html_url").extract[String],
       (repoJson \ "full_name").extract[String],
       (repoJson \ "name").extract[String],
-      (repoJson \ "description").extract[String],
+      repoDesc,
       (repoJson \ "language").extract[String],
       (repoJson \ "stargazers_count").extract[String],
       (repoJson \ "forks").extract[String],
@@ -146,8 +163,7 @@ object Github {
       numWatchers,
       contributors.length,
       numCommits,
-      calculateRanks(repoJson, numWatchers, contributors.length, numCommits),
-      autoSuggest)
+      calculateRanks(repoJson, numWatchers, contributors.length, numCommits), autoSuggest)
 
     orgRepo
   }
@@ -217,7 +233,7 @@ object Github {
     val repoDescClean = replacePunctuation(repoDesc)
 
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
-    autoSuggestFields += SuggestField(s"[$repoNameClean,$repoDescClean]",repoNameClean )
+    autoSuggestFields += SuggestField("[\""+repoNameClean+"\",\""+repoDescClean+"\"]",repoNameClean)
     autoSuggestFields += SuggestField(repoName, repoNameClean)
     autoSuggestFields += SuggestField(keysSuggest, repoNameClean)
     autoSuggestFields += SuggestField(write(suggestContributors), repoNameClean)

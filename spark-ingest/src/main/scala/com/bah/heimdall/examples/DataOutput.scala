@@ -1,7 +1,6 @@
-package com.bah.heimdall.process
+package com.bah.heimdall.examples
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
 object DataOutput {

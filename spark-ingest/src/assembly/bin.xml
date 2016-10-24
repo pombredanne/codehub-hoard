@@ -24,8 +24,8 @@
 			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/conf</directory>
-			<outputDirectory>conf</outputDirectory>
+			<directory>${basedir}/config</directory>
+			<outputDirectory>config</outputDirectory>
 			<includes>
 				<include>*.conf</include>
 			</includes>

@@ -13,7 +13,7 @@ object AppConfig {
   def apply(configFile:String): AppConfig = {
     val app = new AppConfig()
     if (configFile.isEmpty) {
-      println(s"Configuration file was set while submitting the Job")
+      println(s"Configuration file was set not while submitting the Job")
       throw new RuntimeException(s"Configuration file could not be loaded from $configFile")
     }
     config = ConfigFactory.parseFile(new File(configFile))
@@ -34,7 +34,7 @@ class AppConfig {
       throw new RuntimeException(getMessage(PUB_ACCESS_TOKEN))
     if(conf.getString(ENT_ACCESS_TOKEN).isEmpty)
       throw new RuntimeException(getMessage(ENT_ACCESS_TOKEN))
-    //Elastic Search
+    //Kafka Required properties
 
   }
 }
