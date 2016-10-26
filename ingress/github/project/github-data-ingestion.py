@@ -35,7 +35,6 @@ def _ingest_repo_data(config, orgs):
             project['organization_url'] = repo['owner']['html_url']
             project['org_avatar_url'] = repo['owner']['avatar_url']
             project['org_type'] = repo['owner']['type']
-
             contributors = _get_contributors_info(config, org, repo['name'])
             readme_results = _get_readme_info(config, org, repo['name'])
             watchers = _calculate_watchers(config, org, repo['name'])
@@ -59,6 +58,7 @@ def _ingest_repo_data(config, orgs):
             project['readme_url'] = readme_results['readme_url']
             project['contributors_list'] = contributors['contributors']
             project['updated_at'] = repo['updated_at']
+            project['created_at'] = repo['created_at']
             project['suggest'] = _calculate_autosuggest(repo['name'],
                                                         repo['description'],
                                                         project['organization'],
@@ -390,7 +390,7 @@ def _config_logger(args):
 def main(args):
     _config_logger(args)
     config = _read_config(args)
-
+    print(config)
     ingest_logger.info('Ingesting data using this configuration ==== %s', config)
 
     if config['env'] == 'ALL':
