@@ -30,11 +30,8 @@ def get_public_repos(config):
     orgs_public_repositories = []
     orgs = configurations['public_orgs']
     for org in orgs:
-        print("org: "+org)
         res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=False)
-        print(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token)
         orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
-    print(len(orgs_public_repositories))
     return orgs_public_repositories
 
 def get_enterprise_repos(config):
@@ -47,7 +44,6 @@ def get_enterprise_repos(config):
     for repo_url in res_list:
         ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=False)
         orgs_enterprise_reponsitories = orgs_enterprise_reponsitories +  json.loads(ret_list.text)
-    print(len(orgs_enterprise_reponsitories))
     return orgs_enterprise_reponsitories
 
 def customize_repo_attributes_mapping(orgs_reponsitories):
@@ -73,13 +69,10 @@ def clone_public_projects(repos,config):
     logging.info(time.strftime("%c")+' removing repositories if already exists')
     #delete_directory(clone_dir)
     logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
-    print(len(repos))
-    print("len::")
     for repo in repos:
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
         clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
         if not os.path.exists(clone_dir):
-            print(repo['clone_url'])
             Repo.clone_from(repo['clone_url'], clone_dir)
 
 def clone_enterprise_projects(repos,config):
@@ -89,13 +82,10 @@ def clone_enterprise_projects(repos,config):
     logging.info(time.strftime("%c")+' removing repositories if already exists')
     #delete_directory(clone_dir)
     logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
-    print(len(repos))
-    print("len::Im Heeeeeeeeeerrrrrre")
     for repo in repos:
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
         clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
         if not os.path.exists(clone_dir):
-            print(repo['clone_url'])
             Repo.clone_from(repo['clone_url'], clone_dir,env={'GIT_SSL_NO_VERIFY': '1'}, username='mohseni-yahya')
 def process_cloned_projects(repos):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
