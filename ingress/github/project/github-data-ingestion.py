@@ -59,6 +59,7 @@ def _ingest_repo_data(config, orgs):
             project['readme_url'] = readme_results['readme_url']
             project['contributors_list'] = contributors['contributors']
             project['updated_at'] = repo['updated_at']
+            project['created_at'] = repo['created_at']
             project['suggest'] = _calculate_autosuggest(repo['name'],
                                                         repo['description'],
                                                         project['organization'],
@@ -390,7 +391,7 @@ def _config_logger(args):
 def main(args):
     _config_logger(args)
     config = _read_config(args)
-
+    print(config)
     ingest_logger.info('Ingesting data using this configuration ==== %s', config)
 
     if config['env'] == 'ALL':
