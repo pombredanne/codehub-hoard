@@ -30,7 +30,8 @@ def _read_config(args):
         config['install_sonar_server'] = args.install_sonar_server
     if ('install_sonar_runner' in args) and (args.install_sonar_server is not None):
         config['install_sonar_runner'] = args.install_sonar_runner
-
+    if ('install_plugins' in args) and (args.install_plugins is not None):
+        config['install_plugins'] = args.install_plugins
     _convert_public_orgs(config)
     _convert_sonar_metrics(config)
 
@@ -67,6 +68,9 @@ def _parse_commandline():
                         help='determine to install sonar runner [default: false]',
                         action='store_true')
 
+    parser.add_argument('-install_plugins', '--install_plugins',
+                        help='determine to install whether to install sonar plugins [default: false]',
+                        action='store_true')
     return parser.parse_args()
 
 

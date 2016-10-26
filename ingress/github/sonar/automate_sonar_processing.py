@@ -31,7 +31,6 @@ def get_public_repos(config):
     orgs = configurations['public_orgs']
     for org in orgs:
         res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=False)
-        print(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token)
         orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
     return orgs_public_repositories
 
@@ -63,7 +62,7 @@ def delete_directory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
 
-def clone_projects(repos,config):
+def clone_public_projects(repos,config):
     configurations = config['config']
     access_token = configurations['public_github_access_token']
     clone_dir = os.getcwd() + '/cloned_projects/'
@@ -76,6 +75,18 @@ def clone_projects(repos,config):
         if not os.path.exists(clone_dir):
             Repo.clone_from(repo['clone_url'], clone_dir)
 
+def clone_enterprise_projects(repos,config):
+    configurations = config['config']
+    access_token = configurations['enterprise_github_access_token']
+    clone_dir = os.getcwd() + '/cloned_projects/'
+    logging.info(time.strftime("%c")+' removing repositories if already exists')
+    #delete_directory(clone_dir)
+    logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
+    for repo in repos:
+        logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
+        clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
+        if not os.path.exists(clone_dir):
+            Repo.clone_from(repo['clone_url'], clone_dir,env={'GIT_SSL_NO_VERIFY': '1'}, username='mohseni-yahya')
 def process_cloned_projects(repos):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
     repos_src = []
@@ -217,16 +228,30 @@ def create_result_json(filtered_repo, result_path):
         json.dump(filtered_repo, outfile, indent=4, sort_keys=True, separators=(',', ':'))
     return result_path
 
+def handle_pub_ent_result_json(config,filtered_repo):
+    logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
+    configurations = config['config']
+    repos = []
+    if configurations['env']  == 'PUBLIC':
+        res_pub_dir = os.getcwd()+"/metric_pub_result.json"
+        create_result_json(filtered_repo,res_pub_dir)
+    elif configurations['env']  == 'ENTERPRISE':
+        res_ent_dir = os.getcwd()+"/metric_ent_result.json"
+        create_result_json(filtered_repo,res_ent_dir)
+    else:
+        res_dir = os.getcwd()+"/metric_result.json"
+        create_result_json(filtered_repo,res_dir)
+
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
     repos = collect_repositries(config)
-    clone_projects(repos,config)
+    clone_public_projects(repos,config)
+    clone_enterprise_projects(repos,config)
     processed_repos = process_cloned_projects(repos)
     build_sonar_project_config(processed_repos,config)
     filtered_repo = make_sonar_api_call(processed_repos,config)
     os.chdir("..")
-    res_dir = os.getcwd()+"/metric_result.json"
-    create_result_json(filtered_repo,res_dir)
+    handle_pub_ent_result_json(config,filtered_repo)
 
 
 if __name__ == "__main__":
