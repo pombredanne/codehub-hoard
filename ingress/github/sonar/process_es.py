@@ -39,12 +39,12 @@ def makeEsUpdates(config,returned_responses):
     collected_ids = []
     collected_response = []
     configurations = config['config']
+    org_number = len(configurations['public_orgs']) + len(configurations['enterprise_orgs'])
     for ret in returned_responses:
         project_id = ret['returned_res']['hits']['hits'][0]['_id']
         filtered_health_metrics = ret['metrics']
-
         if len(filtered_health_metrics) > 0:
-            data_json = {"project_health_metrics": filtered_health_metrics}
+            data_json = {"project_health_metrics": filtered_health_metrics, "org_number":org_number}
             update_query = {
               "doc": data_json
             }
@@ -111,16 +111,13 @@ def automate_processes(config):
     res_ent_dir = os.getcwd()+"/metric_ent_result.json"
     if os.path.exists(res_pub_dir):
         results = read_result_file(res_pub_dir)
-        print(results)
         process_elasticSearch_update(results, config)
     if os.path.exists(res_ent_dir):
         results = read_result_file(res_ent_dir)
-        print(results)
         process_elasticSearch_update(results, config)
     if not (os.path.exists(res_pub_dir) and os.path.exists(res_ent_dir)):
         automate_sonar_processing.automate_processes(config)
         results = read_result_file(res_dir)
-        print(results)
         process_elasticSearch_update(results, config)
 
     #cleanup_after_update()
