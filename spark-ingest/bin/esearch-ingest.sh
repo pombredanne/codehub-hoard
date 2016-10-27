@@ -2,7 +2,7 @@
 
 set -e
 
-DATA_INPUT_DIR="/home/ec2-user/dev/data/esearch/input/github"
+DATA_INPUT_DIR="~/dev/data/esearch/input/github"
 
 #add sorting
 for dir in $DATA_INPUT_DIR/*/;

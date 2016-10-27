@@ -19,11 +19,11 @@ $INSTALL_DIR/$NIFI_VERSION/bin/nifi.sh stop
 sleep 10
 
 echo Stopping Kafka ...
-$INSTALL_DIR/$KAFKA_VERSION/bin/kafka-server-stop
+$INSTALL_DIR/$KAFKA_VERSION/bin/kafka-server-stop.sh
 
 echo Stopping Kafka Zookeeper ...
-$INSTALL_DIR/$KAFKA_VERSION/bin/zookeeper-server-stop
+$INSTALL_DIR/$KAFKA_VERSION/bin/zookeeper-server-stop.sh
 sleep 10
 
-echo stop-all completed!
+echo Stop-all completed!
 

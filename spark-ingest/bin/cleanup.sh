@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 #Temporary script until we add batchid for every run
+mkdir -p ~/dev/data
 
 SEARCH_DATA_DIR="~/dev/data/esearch/"
 INGEST_DATA_DIR="~/dev/data/ingest/"
