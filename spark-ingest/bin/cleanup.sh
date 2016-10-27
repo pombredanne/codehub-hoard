@@ -2,9 +2,9 @@
 
 #Temporary script until we add batchid for every run
 
-SEARCH_DATA_DIR="/home/ec2-user/dev/data/esearch/"
-INGEST_DATA_DIR="/home/ec2-user/dev/data/ingest/"
-PROCESS_DATA_DIR="/home/ec2-user/dev/data/process/"
+SEARCH_DATA_DIR="~/dev/data/esearch/"
+INGEST_DATA_DIR="~/dev/data/ingest/"
+PROCESS_DATA_DIR="~/dev/data/process/"
 
 rm -r "$SEARCH_DATA_DIR"
 rm -r "$INGEST_DATA_DIR"

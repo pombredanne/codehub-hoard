@@ -148,4 +148,8 @@ class GithubSpec extends BaseSparkSpec with Matchers {
     val watchersCount = Github.buildWatchers(watchers)
     assert(watchersCount == 0)
   }
+
+  //"different fields" should "construct the suggest string" in {
+  //  buildAutoSuggest
+  //}
 }

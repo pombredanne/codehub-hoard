@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 DATA_INPUT_DIR="/home/ec2-user/dev/data/esearch/input/github"
 
 #add sorting

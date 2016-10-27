@@ -35,6 +35,7 @@ class AppConfig {
     if(conf.getString(ENT_ACCESS_TOKEN).isEmpty)
       throw new RuntimeException(getMessage(ENT_ACCESS_TOKEN))
     //Kafka Required properties
-
+    if(conf.getString(KAFKA_BOOTSTRAP_SERVERS).isEmpty)
+      throw new RuntimeException(getMessage(KAFKA_BOOTSTRAP_SERVERS))
   }
 }

@@ -17,7 +17,7 @@ class HttpUtilsSpec extends BaseSpec{
   }
 
   "valid url" should "not contain stage error in response" in {
-    val url = "https://github.boozallencsn.com/api/v3/organization?access_token=4faddc49265b75feffa1ab129c957d0dd5c8461f"
+    val url = "https://github.boozallencsn.com/api/v3/organization?access_token=abcdab129c957d0dd5c8461f"
     val js = parse(HttpUtils.getResponseFromUrl(url, false))
     val fld = js findField {
       case JField(STAGE_ERROR, _) => true

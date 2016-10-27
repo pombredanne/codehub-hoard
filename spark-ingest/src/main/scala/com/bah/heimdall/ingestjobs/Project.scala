@@ -19,10 +19,10 @@ object Project {
                      contributors_list:List[Contributor],
                      languages:String,
                      readMe: ReadMe,
-                     watchersCount: Int,
+                     watchers: Int,
                      contributors:Int,
                      commits: Int,
-                     ranks:Int,
+                     rank:Int,
                      suggest:String)
   case class Contributor(username:String, profile_url:String, avatar_url:String, user_type:String)
   case class ReadMe(content:String, url:String)

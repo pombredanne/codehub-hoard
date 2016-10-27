@@ -2,10 +2,8 @@ package com.bah.heimdall.common
 
 import com.typesafe.config.Config
 import com.bah.heimdall.common.AppConstants._
-import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, ConsumerRecords, KafkaConsumer => JavaKafkaConsumer}
-
+import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer => JavaKafkaConsumer}
 import collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
 
 object KafkaConsumer {
 
@@ -16,6 +14,7 @@ object KafkaConsumer {
   }
 
   def getConsumerConfig(conf: Config): Map[String, Object] = {
+    require(conf.getString(KAFKA_GROUP_ID).isEmpty, "Kafka consumer group id is not configured.")
     Map[String, Object](
       ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> conf.getString(KAFKA_BOOTSTRAP_SERVERS),
       ConsumerConfig.GROUP_ID_CONFIG -> conf.getString(KAFKA_GROUP_ID),
@@ -31,6 +30,7 @@ class KafkaConsumer {
   var consumer: JavaKafkaConsumer[String, String] = null
 
   def getMessages(topic : String, conf:Config): Option[List[KafkaMessage]] = {
+    require(topic.isEmpty, "Kafka topic is not configured.")
     val topics = List(topic)
     consumer.subscribe(topics.asJava)
     val messages = consumer.poll(1000).asScala
@@ -46,7 +46,7 @@ class KafkaConsumer {
   }
 
   def close = {
-    consumer.close()
+    if (consumer != null) consumer.close()
   }
 }
 

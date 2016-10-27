@@ -3,21 +3,13 @@ package com.bah.heimdall.common
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
-import org.apache.kafka.clients.producer.{ProducerRecord, KafkaProducer => JavaKafkaProducer}
+import org.apache.kafka.clients.producer.{ProducerConfig, ProducerRecord, KafkaProducer => JavaKafkaProducer}
 import com.bah.heimdall.common.AppConstants._
 
 import collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object KafkaProducer {
-  val BOOTSTRAP_SERVERS = "bootstrap.servers"
-  val ACKS = "acks"
-  val RETRIES = "retries"
-  val BATCH_SIZE = "batch.size"
-  val LINGER_MS = "linger.ms"
-  val BUFFER_MEMORY = "buffer.memory"
-  val KEY_SERLZR = "key.serializer"
-  val VAL_SERLZR = "value.serializer"
 
   def apply(conf: Config): KafkaProducer = {
     val kafkaProducer = new KafkaProducer
@@ -27,14 +19,14 @@ object KafkaProducer {
 
   def getProducerConfig(conf:Config):Map[String, Object] = {
     Map[String, Object](
-      BOOTSTRAP_SERVERS -> conf.getString(KAFKA_BOOTSTRAP_SERVERS),
-      ACKS -> conf.getString(KAFKA_ACKS),
-      RETRIES -> conf.getString(KAFKA_RETRIES),
-      BATCH_SIZE -> conf.getString(KAFKA_BATCH_SIZE),
-      LINGER_MS -> "1",
-      BUFFER_MEMORY -> conf.getString(KAFKA_BUFFER_MEMORY),
-      KEY_SERLZR -> "org.apache.kafka.common.serialization.StringSerializer",
-      VAL_SERLZR -> "org.apache.kafka.common.serialization.StringSerializer")
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> conf.getString(KAFKA_BOOTSTRAP_SERVERS),
+      ProducerConfig.ACKS_CONFIG -> conf.getString(KAFKA_ACKS),
+      ProducerConfig.RETRIES_CONFIG -> conf.getString(KAFKA_RETRIES),
+      ProducerConfig.BATCH_SIZE_CONFIG -> conf.getString(KAFKA_BATCH_SIZE),
+      ProducerConfig.LINGER_MS_CONFIG -> "1",
+      ProducerConfig.BUFFER_MEMORY_CONFIG -> conf.getString(KAFKA_BUFFER_MEMORY),
+      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> "org.apache.kafka.common.serialization.StringSerializer",
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> "org.apache.kafka.common.serialization.StringSerializer")
   }
 }
 
