@@ -1,3 +1,4 @@
+
 import com.bah.heimdall.BaseSparkSpec
 import com.bah.heimdall.common.HttpUtils._
 import com.bah.heimdall.common.{AppConfig, HttpUtils, JsonUtils}
@@ -149,7 +150,44 @@ class GithubSpec extends BaseSparkSpec with Matchers {
     assert(watchersCount == 0)
   }
 
-  //"different fields" should "construct the suggest string" in {
-  //  buildAutoSuggest
-  //}
+  "different fields" should "construct valid suggest string" in {
+    val expectedJson =
+      """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},
+                    |{"input":["MyRepoName"],"output":"MyRepoName"},
+                    |{"input":["Python","Shell"],"output":"MyRepoName"},
+                    |{"input":["user1","user2"],"output":"MyRepoName"}]}""".stripMargin
+    val lang = """{"Python":9523,"Shell":3102}"""
+    val contributors = List(Contributor("user1","http://profileurl1","http://avatar_url1","user"),
+                            Contributor("user2","http://profileurl1","http://avatar_url1","user"))
+
+    val suggestStr = Github.buildAutoSuggest("MyRepoName", "MyRepoDesc", "MyOrgName", lang, contributors)
+    assert(suggestStr == expectedJson)
+  }
+
+  "missing languages field" should "construct valid suggest string" in {
+    val expectedJson =
+      """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},
+                   |{"input":["MyRepoName"],"output":"MyRepoName"},
+                   |{"input":[],"output":"MyRepoName"},
+                   |{"input":["user1","user2"],"output":"MyRepoName"}]}""".stripMargin
+    val lang = """{}"""
+    val contributors = List(Contributor("user1","http://profileurl1","http://avatar_url1","user"),
+      Contributor("user2","http://profileurl1","http://avatar_url1","user"))
+
+    val suggestStr = Github.buildAutoSuggest("MyRepoName", "MyRepoDesc", "MyOrgName", lang, contributors)
+    assert(suggestStr == expectedJson)
+  }
+
+  "missing contributors field" should "construct valid suggest string" in {
+    val expectedJson =
+      """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},
+                   |{"input":["MyRepoName"],"output":"MyRepoName"},
+                   |{"input":["Python","Shell"],"output":"MyRepoName"},
+                   |{"input":[],"output":"MyRepoName"}]}""".stripMargin
+    val lang = """{"Python":9523,"Shell":3102}"""
+    val contributors = List()
+
+    val suggestStr = Github.buildAutoSuggest("MyRepoName", "MyRepoDesc", "MyOrgName", lang, contributors)
+    assert(suggestStr == expectedJson)
+  }
 }

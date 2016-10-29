@@ -36,7 +36,7 @@ class KafkaProducer {
 
   /**
     * Messages are usually sent asynchronously but this method calls a get to block and return only
-    * after the message is send completes
+    * after the message send completes
     *
     * @param topic
     * @param key

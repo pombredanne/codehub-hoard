@@ -224,19 +224,17 @@ object Github {
     val langKeys: Map[String, String] = parse(languages).mapField( k =>{
       (k._1, k._2)
     }).extract[Map[String, String]]
-    val keysSuggest = write(langKeys.keySet)
     val contribNames = contributors.map(contrib => {
       contrib.username
     })
-    val suggestContributors : JArray = contribNames.toSeq
     val repoNameClean = replacePunctuation(repoName)
     val repoDescClean = replacePunctuation(repoDesc)
 
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
-    autoSuggestFields += SuggestField("[\""+repoNameClean+"\",\""+repoDescClean+"\"]",repoNameClean)
-    autoSuggestFields += SuggestField(repoName, repoNameClean)
-    autoSuggestFields += SuggestField(keysSuggest, repoNameClean)
-    autoSuggestFields += SuggestField(write(suggestContributors), repoNameClean)
+    autoSuggestFields += SuggestField(List(repoNameClean,repoDescClean),repoNameClean)
+    autoSuggestFields += SuggestField(List(repoName), repoNameClean)
+    autoSuggestFields += SuggestField(langKeys.keySet.toList, repoNameClean)
+    autoSuggestFields += SuggestField(contribNames, repoNameClean)
     write(Suggest(autoSuggestFields.toList))
   }
 

@@ -42,7 +42,7 @@ sed -i 's/nifi.web.http.port=8080/nifi.web.http.port=8088/' $INSTALL_DIR/$NIFI_V
 
 #Start all services
 echo Starting Spark ...
-INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
+$INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
 sleep 10
 
 echo Starting Nifi ...
