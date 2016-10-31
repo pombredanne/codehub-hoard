@@ -11,7 +11,7 @@ KIBANA_HOME=kibana-4.6.1
 
 #Start all services
 echo Starting Spark ...
-INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
+$INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
 sleep 10
 
 echo Starting Nifi ...
