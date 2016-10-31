@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SPARK_HOME_DIR="~/dev/spark-2.0.0-bin-hadoop2.7"
+SPARK_HOME_DIR="~/ingest-tools/spark-2.0.0-bin-hadoop2.7"
 JOB_DIR="~/dev/spark-ingest"
 INGEST_OUTPUT_DIR="~/dev/data/process/input/github"
 
