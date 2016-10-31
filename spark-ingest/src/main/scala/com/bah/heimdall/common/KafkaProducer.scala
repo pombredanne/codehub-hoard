@@ -54,6 +54,7 @@ class KafkaProducer {
       }
       case Failure(ex) =>{
         println(s"$STAGE_ERROR:Failed sending message:$message to topic:$topic")
+        ex.printStackTrace()
         false
       }
     }
