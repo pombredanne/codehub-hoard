@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
-SPARK_HOME_DIR="~/ingest-tools/spark-2.0.0-bin-hadoop2.7"
-JOB_DIR="~/dev/spark-ingest"
-PROCESS_OUTPUT_DIR="~/dev/data/esearch/input/github"
-PROCESS_INPUT_DIR="~/dev/data/process/input/github/"
+INGEST_HOME=${ingest.home}
+INGEST_TOOLS=${ingest.tools.dir}
+DATA_DIR=${ingest.data.dir}
+SPARK_HOME_DIR="${INGEST_TOOLS}/spark-2.0.1-bin-hadoop2.7"
+PROCESS_INPUT_DIR="${DATA_DIR}/process/input"
+PROCESS_OUTPUT_DIR="${DATA_DIR}/esearch/input"
 
-$SPARK_HOME_DIR/bin/spark-submit --class com.bah.heimdall.process.ElasticDataOutput --master local --deploy-mode client --executor-memory 3g --name ProcessOutput $JOB_DIR/spark-ingest-1.0-SNAPSHOT.jar $JOB_DIR/config/application.conf $PROCESS_INPUT_DIR $PROCESS_OUTPUT_DIR
+
+echo "$SPARK_HOME_DIR/bin/spark-submit --class com.bah.heimdall.process.ElasticDataOutput --master local --deploy-mode client --executor-memory 3g --name ProcessOutput $INGEST_HOME/spark-ingest-1.0-SNAPSHOT.jar $INGEST_HOME/config/application.conf $PROCESS_INPUT_DIR $PROCESS_OUTPUT_DIR"
+$SPARK_HOME_DIR/bin/spark-submit --class com.bah.heimdall.process.ElasticDataOutput --master local --deploy-mode client --executor-memory 3g --name ProcessOutput $INGEST_HOME/spark-ingest-1.0-SNAPSHOT.jar $INGEST_HOME/config/application.conf $PROCESS_INPUT_DIR $PROCESS_OUTPUT_DIR

@@ -13,6 +13,7 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
 
 public class IngestUtil {
@@ -24,7 +25,7 @@ public class IngestUtil {
         try {
             //FIXME
             /** Please note: SSL certificate validation is disabled for now ***/
-            SSLContextBuilder contextBuilder = SSLContextBuilder.create();
+            SSLContextBuilder contextBuilder = SSLContextBuilder.create().useProtocol("TLSv1.2");
             contextBuilder.loadTrustMaterial(new TrustStrategy(){
                 public boolean isTrusted(java.security.cert.X509Certificate[] var1, String var2) throws java.security.cert.CertificateException{
                     return true;
@@ -33,7 +34,11 @@ public class IngestUtil {
 
             SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(contextBuilder.build(), new DefaultHostnameVerifier());
             HttpClientBuilder builder = HttpClients.custom().setSSLSocketFactory(sslFactory);
-            HttpClient client = builder.build();
+            //temp
+            //.setSslcontext(SSLContexts.custom().useProtocol("TLSv1").build())
+            HttpClient client = builder.setSSLContext(SSLContexts.custom().useProtocol("TLSv1.2").build()).build();
+
+            // HttpClient client = builder.build();
             HttpGet request = new HttpGet(url);
             HttpResponse httpResponse = client.execute(request);
             String responseString = new BasicResponseHandler().handleResponse(httpResponse);

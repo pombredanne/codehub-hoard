@@ -2,7 +2,7 @@ package com.bah.heimdall.ingestjobs
 
 import java.util.Date
 
-import com.bah.heimdall.common.{AppConfig, JsonUtils, KafkaProducer}
+import com.bah.heimdall.common.{AppConfig, JsonUtils, KafkaMessage, KafkaProducer}
 import com.bah.heimdall.common.AppConstants._
 import com.bah.heimdall.common.JsonUtils._
 import com.bah.heimdall.common.HttpUtils._
@@ -11,7 +11,6 @@ import com.bah.heimdall.ingestjobs.Project._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.json4s._
-import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
 
@@ -30,7 +29,11 @@ object Github {
 
     val configFile = args(0)
     AppConfig(configFile)
+
     val batchId = new Date().getTime();
+    println(s"Processing batchId: $batchId")
+    val indexName = AppConfig.conf.getString(PROJECTS_INDEX_NAME)
+
     val outPath = args(1) + "/"+ batchId
     val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
 
@@ -40,102 +43,94 @@ object Github {
     val runEnv = AppConfig.conf.getString(RUN_ENV)
     println(s"Project run environment is set to $runEnv")
     if(runEnv == PUBLIC){
-      AppConfig.envType = PUBLIC
-      val orgUrlsRdd = sc.parallelize(getPublicOrgsList)
+      val orgUrlsRdd = sc.parallelize(getPublicOrgsList())
       val orgsRdd = orgUrlsRdd.map(getOrgData(_))
-      pullData(orgsRdd).saveAsTextFile(outPath)
+      pullData(runEnv, orgsRdd).saveAsTextFile(outPath)
     }else if(runEnv == ENTERPRISE){
-      AppConfig.envType = ENTERPRISE
       val orgTypeList = getEnterpriseOrgTypesList
       val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
       val orgsRdd = sc.parallelize(orgsList)
-      pullData(orgsRdd).saveAsTextFile(outPath)
+      pullData(runEnv, orgsRdd).saveAsTextFile(outPath)
     }else if(runEnv == ALL){
-      AppConfig.envType = PUBLIC
-      val orgUrlsRdd = sc.parallelize(getPublicOrgsList)
+      val orgUrlsRdd = sc.parallelize(getPublicOrgsList())
       val pubOrgsRdd = orgUrlsRdd.map(getOrgData(_))
-      val pubOutRdd = pullData(pubOrgsRdd)
+      val pubOutRdd = pullData(PUBLIC, pubOrgsRdd)
 
-      AppConfig.envType = ENTERPRISE
       val orgTypeList = getEnterpriseOrgTypesList
       val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
       val entOrgsRdd = sc.parallelize(orgsList)
-      val entOutRdd = pullData(entOrgsRdd)
+      val entOutRdd = pullData(ENTERPRISE, entOrgsRdd)
       pubOutRdd.union(entOutRdd).saveAsTextFile(outPath)
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
-    producer.sendMessageBlocking(completeTopic, batchId.toString, batchId.toString, AppConfig.conf)
+    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName")
+    producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
   }
 
   def isPublic(env:String) = (env == "PUBLIC")
 
-  def getSourceUrl() = {
-   if(isPublic(AppConfig.envType)) AppConfig.conf.getString(PUB_GITHUB_API_URL) else AppConfig.conf.getString(ENT_GITHUB_API_URL)
+  def getSourceUrl(env:String) = {
+   if(isPublic(env)) AppConfig.conf.getString(PUB_GITHUB_API_URL) else AppConfig.conf.getString(ENT_GITHUB_API_URL)
   }
 
-  def getAccessToken() = {
-    val accessToken = if(isPublic(AppConfig.envType)) AppConfig.conf.getString(PUB_ACCESS_TOKEN) else AppConfig.conf.getString(ENT_ACCESS_TOKEN)
+  def getAccessToken(env:String) = {
+    val accessToken = if(isPublic(env)) AppConfig.conf.getString(PUB_ACCESS_TOKEN) else AppConfig.conf.getString(ENT_ACCESS_TOKEN)
     s"access_token=$accessToken"
   }
 
   def getPublicOrgsList(): Array[String] = {
-    AppConfig.conf.getString(ORGS).split(",").map(getSourceUrl() + "users/" + _ +"?"+ getAccessToken())
+    AppConfig.conf.getString(ORGS).split(",").map(getSourceUrl(PUBLIC) + "users/" + _ +"?"+ getAccessToken(PUBLIC))
   }
 
   def getEnterpriseOrgTypesList(): Array[String] = {
-    "organizations,users".split(",").map(getSourceUrl() + _ +"?since=0&per_page=100&"+ getAccessToken())
-  }
-
-  def pullData(orgsRdd: RDD[JValue]): RDD[String] = {
-    val orgsOutput = orgsRdd.map(orgJson => {
-      val reposUrl = (orgJson \ "repos_url").extract[String]
-      val orgRepos = getOrgRepos(reposUrl)
-      //Repo fields
-      val orgReposOutput = orgRepos.children.map(repoJson => {
-        buildOrgStructure(orgJson, repoJson)
-      })
-      write(orgReposOutput)
-    })
-    orgsOutput
+    "organizations,users".split(",").map(getSourceUrl(ENTERPRISE) + _ +"?since=0&per_page=100&"+ getAccessToken(ENTERPRISE))
   }
 
   def getOrgData(url: String): JValue = {
     getJsonResponse(url, false)
   }
 
-  def getOrgRepos(orgRepoUrl: String): JValue = {
-    getJsonResponse(s"$orgRepoUrl?" + getAccessToken(), false)
+  def getOrgRepos(env:String, orgRepoUrl: String): JValue = {
+    getJsonResponse(s"$orgRepoUrl?" + getAccessToken(env), false)
   }
 
-  def getPagedRepoProperties(org: String, repoName: String, propertyName: String): ArrayBuffer[JValue] = {
-      val respPerPage = if (AppConfig.conf.getInt(RESPONSE_PER_PAGE) > 0) AppConfig.conf.getInt(RESPONSE_PER_PAGE) else 100
-      getResponseWithPagedData(getSourceUrl() + s"repos/$org/$repoName/$propertyName?since=0&per_page=$respPerPage&" + getAccessToken(), true)
+  def getPagedRepoProperties(env:String, org: String, repoName: String, propertyName: String): ArrayBuffer[JValue] = {
+    val respPerPage = if (AppConfig.conf.getInt(RESPONSE_PER_PAGE) > 0) AppConfig.conf.getInt(RESPONSE_PER_PAGE) else 100
+    getResponseWithPagedData(getSourceUrl(env) + s"repos/$org/$repoName/$propertyName?since=0&per_page=$respPerPage&" + getAccessToken(env), true)
   }
 
-  def getRepoProperties(org: String, repoName: String, propertyName: String): String = {
-    getResponse(getSourceUrl() + s"repos/$org/$repoName/$propertyName?" + getAccessToken(), true)
+  def getRepoProperties(env:String, org: String, repoName: String, propertyName: String): String = {
+    getResponse(getSourceUrl(env) + s"repos/$org/$repoName/$propertyName?" + getAccessToken(env), true)
   }
 
-  def calculateRanks(repoJson: JValue, numWatchers:Int, numContributors:Int, numCommits:Int): Int ={
-    val stars = (repoJson \ "stargazers_count").extract[Int]
-    (stars*3) + (numWatchers*4) + (numContributors*5) + numCommits
+  def pullData(env:String, orgsRdd: RDD[JValue]): RDD[String] = {
+    val orgsOutput = orgsRdd.map(orgJson => {
+      val reposUrl = (orgJson \ "repos_url").extract[String]
+      val orgRepos = getOrgRepos(env, reposUrl)
+      //Repo fields
+      val orgReposOutput = orgRepos.children.map(repoJson => {
+        buildOrgStructure(env, orgJson, repoJson)
+      })
+      write(orgReposOutput)
+    })
+    orgsOutput
   }
 
-  def buildOrgStructure(orgJson: JValue, repoJson: JValue): OrgRepo = {
+  def buildOrgStructure(env:String, orgJson: JValue, repoJson: JValue): OrgRepo = {
     val orgLogin = (orgJson \ "login").extract[String]
     val orgId = (orgJson \ "id").extract[String]
     val repoName = (repoJson \ "name").extract[String]
     val repoDesc = (repoJson \ "description").extract[String]
     //Get list properties
-    val contributorsJson = getPagedRepoProperties(orgLogin, repoName, "contributors")
+    val contributorsJson = getPagedRepoProperties(env, orgLogin, repoName, "contributors")
     val (contributors, numCommits) = buildContributors(contributorsJson)
-    val languages = getRepoProperties(orgLogin, repoName, "languages")
-    val watchers = getPagedRepoProperties(orgLogin, repoName, "subscribers")
+    val languages = getRepoProperties(env, orgLogin, repoName, "languages")
+    val watchers = getPagedRepoProperties(env, orgLogin, repoName, "subscribers")
     val numWatchers = buildWatchers(watchers)
     //Get file associated to repo
-    val readmeRaw = getRepoProperties(orgLogin, repoName, "contents/README.md")
+    val readmeRaw = getRepoProperties(env, orgLogin, repoName, "contents/README.md")
     //Auto suggest
     val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
 
@@ -146,7 +141,7 @@ object Github {
           (repoJson \ "owner" \ "html_url").extract[String],
           (repoJson \ "owner" \ "avatar_url").extract[String],
           (repoJson \ "owner" \ "type").extract[String]),
-      AppConfig.conf.getString(RUN_ENV),
+      env,
       repoName,
       (repoJson \ "html_url").extract[String],
       (repoJson \ "full_name").extract[String],
@@ -214,6 +209,11 @@ object Github {
     }else {
       0
     }
+  }
+
+  def calculateRanks(repoJson: JValue, numWatchers:Int, numContributors:Int, numCommits:Int): Int ={
+    val stars = (repoJson \ "stargazers_count").extract[Int]
+    (stars*3) + (numWatchers*4) + (numContributors*5) + numCommits
   }
 
   def buildAutoSuggest(repoName:String,

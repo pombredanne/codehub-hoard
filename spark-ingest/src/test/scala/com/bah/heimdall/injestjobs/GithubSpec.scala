@@ -2,6 +2,7 @@
 import com.bah.heimdall.BaseSparkSpec
 import com.bah.heimdall.common.HttpUtils._
 import com.bah.heimdall.common.{AppConfig, HttpUtils, JsonUtils}
+import com.bah.heimdall.common.AppConstants._
 import com.bah.heimdall.ingestjobs.Project._
 import com.bah.heimdall.ingestjobs.Github
 import org.json4s._
@@ -59,7 +60,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
     val appConf = AppConfig
     val orgUrls = sc.parallelize(Github.getPublicOrgsList())
     val orgsRdd = orgUrls.map(Github.getOrgData(_))
-    val result = Github.pullData(orgsRdd)
+    val result = Github.pullData(PUBLIC, orgsRdd)
     println(result.count())
     //val or = result.map(org => write(org))
     val ls = result.collect()
@@ -69,7 +70,6 @@ class GithubSpec extends BaseSparkSpec with Matchers {
 
   "Enterprise Github data" should "be returned" in {
     val appConf = AppConfig("C:\\dev\\projects\\spark-ingest\\conf\\application.conf")
-    AppConfig.envType = "ENTERPRISE"
     val orgTypeList = Github.getEnterpriseOrgTypesList
     println("** Enterprise Orgs Types **")
     orgTypeList.foreach(println(_))
@@ -78,7 +78,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
     //orgsList.foreach(println(_))
     val orgsRdd = sc.parallelize(orgsList)
     //orgsRdd.foreach((println(_)))
-    Github.pullData(orgsRdd).foreach(println(_))
+    Github.pullData(ENTERPRISE, orgsRdd).foreach(println(_))
   }
 
   "Full Org Json" should "be built" in {
@@ -108,7 +108,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
                         "type": "User"
                         }]"""
     val expectedJson = """{"organization":"Project-Heimdall","organization_url":"https://github.com/Project-Heimdall","org_avatar_url":"https://avatars.githubusercontent.com/u/18699526?v=3","org_type":"Organization","origin":"public","repository":"archive-chorus-uidesigns","contributors":[{"username":"kimchy","profile_url":"https://github.com/kimchy","avatar_url":"https://avatars.githubusercontent.com/u/41300?v=3","user_type":"User"},{"username":"clintongormley","profile_url":"https://github.com/clintongormley","avatar_url":"https://avatars.githubusercontent.com/u/56599?v=3","user_type":"User"}]}"""
-    val orgRepo = Github.buildOrgStructure(parse("""{"login":"elastic"}"""), parse(orgRepoJson))
+    val orgRepo = Github.buildOrgStructure(PUBLIC, parse("""{"login":"elastic"}"""), parse(orgRepoJson))
     //println(orgRepo)
     println(orgRepo.toString())
     //assert(write(orgRepo) == expectedJson)
