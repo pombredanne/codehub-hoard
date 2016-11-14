@@ -125,12 +125,14 @@ object Github {
     val repoDesc = (repoJson \ "description").extract[String]
     //Get list properties
     val contributorsJson = getPagedRepoProperties(env, orgLogin, repoName, "contributors")
-    val (contributors, numCommits) = buildContributors(contributorsJson)
-    val languages = getRepoProperties(env, orgLogin, repoName, "languages")
+    val languagesJson = getRepoProperties(env, orgLogin, repoName, "languages")
     val watchers = getPagedRepoProperties(env, orgLogin, repoName, "subscribers")
-    val numWatchers = buildWatchers(watchers)
     //Get file associated to repo
     val readmeRaw = getRepoProperties(env, orgLogin, repoName, "contents/README.md")
+    //build
+    val (contributors, numCommits) = buildContributors(contributorsJson)
+    val numWatchers = buildWatchers(watchers)
+    val languages = buildLanguageMap(languagesJson)
     //Auto suggest
     val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
 
@@ -148,8 +150,8 @@ object Github {
       (repoJson \ "name").extract[String],
       repoDesc,
       (repoJson \ "language").extract[String],
-      (repoJson \ "stargazers_count").extract[String],
-      (repoJson \ "forks").extract[String],
+      (repoJson \ "stargazers_count").extract[Int],
+      (repoJson \ "forks").extract[Int],
       0,//num of releases
       (repoJson \ "updated_at").extract[String],
       contributors,
@@ -158,7 +160,8 @@ object Github {
       numWatchers,
       contributors.length,
       numCommits,
-      calculateRanks(repoJson, numWatchers, contributors.length, numCommits), autoSuggest)
+      calculateRanks(repoJson, numWatchers, contributors.length, numCommits),
+      autoSuggest)
 
     orgRepo
   }
@@ -211,6 +214,12 @@ object Github {
     }
   }
 
+  def buildLanguageMap(languages:String): Map[String, String] = {
+    parse(languages).mapField( k =>{
+      (k._1, k._2)
+    }).extract[Map[String, String]]
+  }
+
   def calculateRanks(repoJson: JValue, numWatchers:Int, numContributors:Int, numCommits:Int): Int ={
     val stars = (repoJson \ "stargazers_count").extract[Int]
     (stars*3) + (numWatchers*4) + (numContributors*5) + numCommits
@@ -219,11 +228,8 @@ object Github {
   def buildAutoSuggest(repoName:String,
                        repoDesc:String,
                        orgName:String,
-                       languages:String,
-                       contributors:List[Contributor]): String ={
-    val langKeys: Map[String, String] = parse(languages).mapField( k =>{
-      (k._1, k._2)
-    }).extract[Map[String, String]]
+                       languages:Map[String,String],
+                       contributors:List[Contributor]): Suggest ={
     val contribNames = contributors.map(contrib => {
       contrib.username
     })
@@ -233,9 +239,9 @@ object Github {
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
     autoSuggestFields += SuggestField(List(repoNameClean,repoDescClean),repoNameClean)
     autoSuggestFields += SuggestField(List(repoName), repoNameClean)
-    autoSuggestFields += SuggestField(langKeys.keySet.toList, repoNameClean)
+    autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean)
     autoSuggestFields += SuggestField(contribNames, repoNameClean)
-    write(Suggest(autoSuggestFields.toList))
+    Suggest(autoSuggestFields.toList)
   }
 
   def replacePunctuation(value:String):String = {

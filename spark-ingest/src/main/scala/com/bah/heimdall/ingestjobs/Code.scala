@@ -8,9 +8,11 @@ object Code {
                     stage_id:String,
                     organization:Org,
                     project_name:String,
+                    origin: String,
                     language:String,
+                    updated_at:String,
                     //root_dir:String,
                     //src_list:List[String],
-                    metrics:List[Map[String,String]]
+                    metrics:Map[String,Map[String,String]]
                    )
 }

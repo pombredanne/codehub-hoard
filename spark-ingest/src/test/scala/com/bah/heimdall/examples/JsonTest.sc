@@ -47,3 +47,4 @@ val jsonResponse =
 val metricJson = parse(jsonResponse)
 val metrics = (metricJson \ "msr").extract[List[Map[String, String]]]
 write(metrics)
+

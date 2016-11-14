@@ -71,7 +71,7 @@ object Sonar extends GithubBase{
       val orgRepos = getOrgRepos(env, reposUrl)
       //Repo fields
       val orgMetricsOutput = orgRepos.children.map(repoJson => {
-        buildOrgMetricsStructure(orgJson, repoJson)
+        buildOrgMetricsStructure(env, orgJson, repoJson)
       })
       write(orgMetricsOutput)
     })
@@ -83,7 +83,7 @@ object Sonar extends GithubBase{
     parse(getResponse(url, true))
   }
 
-  def buildOrgMetricsStructure(orgJson: JValue, repoJson: JValue): Metric = {
+  def buildOrgMetricsStructure(env:String, orgJson: JValue, repoJson: JValue): Metric = {
     val metricsToCollect = AppConfig.conf.getString(SONAR_PROJECT_HEALTH_METRICS)
     val orgLogin = (orgJson \ "login").extract[String]
     val orgId = (orgJson \ "id").extract[String]
@@ -92,6 +92,10 @@ object Sonar extends GithubBase{
     //val orgMetricsJson = getOrgMetricsJson(metricsToCollect, "org.eclipse.ease:ease")
     val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName)
     val metricsMap = getMetrics(orgMetricsJson)
+    var metricFinal  = Map.empty[String, Map[String, String]]
+    metricsMap.foreach(entry => {
+      metricFinal += (entry.get("key").getOrElse("") -> entry)
+    })
     val metrics = Metric(SRC_SONAR,
                       orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
                       Org((repoJson \ "owner" \ "login").extract[String],
@@ -99,11 +103,14 @@ object Sonar extends GithubBase{
                         (repoJson \ "owner" \ "avatar_url").extract[String],
                         (repoJson \ "owner" \ "type").extract[String]),
                       repoName,
+                      env,
                       (repoJson \ "language").extract[String],
-                      metricsMap
+                      (repoJson \ "updated_at").extract[String],
+                      metricFinal
     )
     metrics
   }
+
 
   def getMetrics(metrics:JValue): List[Map[String,String]] = {
     val metricsMap = (metrics \ "msr").extract[List[Map[String,String]]]
