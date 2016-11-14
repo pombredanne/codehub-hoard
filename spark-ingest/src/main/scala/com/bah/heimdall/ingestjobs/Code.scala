@@ -11,8 +11,6 @@ object Code {
                     origin: String,
                     language:String,
                     updated_at:String,
-                    //root_dir:String,
-                    //src_list:List[String],
                     metrics:Map[String,Map[String,String]]
                    )
 }

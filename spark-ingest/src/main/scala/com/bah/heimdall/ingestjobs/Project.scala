@@ -23,9 +23,8 @@ object Project {
                      contributors:Int,
                      commits: Int,
                      rank:Int,
-                     suggest:Suggest)
+                     suggest:List[SuggestField])
   case class Contributor(username:String, profile_url:String, avatar_url:String, user_type:String)
   case class ReadMe(content:String, url:String)
-  case class Suggest(fields:List[SuggestField])
   case class SuggestField(input:List[String], output:String)
 }

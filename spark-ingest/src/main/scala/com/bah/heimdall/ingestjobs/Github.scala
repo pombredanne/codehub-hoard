@@ -229,7 +229,7 @@ object Github {
                        repoDesc:String,
                        orgName:String,
                        languages:Map[String,String],
-                       contributors:List[Contributor]): Suggest ={
+                       contributors:List[Contributor]): List[SuggestField] ={
     val contribNames = contributors.map(contrib => {
       contrib.username
     })
@@ -241,7 +241,7 @@ object Github {
     autoSuggestFields += SuggestField(List(repoName), repoNameClean)
     autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean)
     autoSuggestFields += SuggestField(contribNames, repoNameClean)
-    Suggest(autoSuggestFields.toList)
+    autoSuggestFields.toList
   }
 
   def replacePunctuation(value:String):String = {

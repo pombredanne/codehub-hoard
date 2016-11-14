@@ -31,4 +31,31 @@ chmod -R 777 "$PROCESS_DATA_DIR"
 curl -XDELETE 'http://localhost:9200/projects/'
 curl -XDELETE 'http://localhost:9200/code/'
 
+curl -XPUT http://localhost:9200/projects/ -d '{
+    "mappings" : {
+        "project" : {
+            "properties" : {
+                "project_name" : {
+                    "type" : "string"
+                },
+                "project_description" : {
+                    "type" : "string"
+                },
+                "content" : {
+                    "type" : "string"
+                },
+                "contributors_list" : {
+                    "type" : "object"
+                },
+                "suggest" : {
+                    "type" : "completion",
+                    "analyzer" : "simple",
+                    "search_analyzer" : "simple"
+                }
+            }
+        }
+    }
+}'
+
+
 echo "Cleanup complete"
