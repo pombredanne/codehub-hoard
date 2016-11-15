@@ -152,7 +152,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
 
   "different fields" should "construct valid suggest string" in {
     val expectedJson =
-      """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":["Python","Shell"],"output":"MyRepoName"},{"input":["user1","user2"],"output":"MyRepoName"}]}""".stripMargin
+      """[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":["Python","Shell"],"output":"MyRepoName"},{"input":["user1","user2"],"output":"MyRepoName"}]""".stripMargin
     val lang = Map("Python" -> "9523","Shell" -> "3102")
     val contributors = List(Contributor("user1","http://profileurl1","http://avatar_url1","user"),
                             Contributor("user2","http://profileurl1","http://avatar_url1","user"))
@@ -162,7 +162,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
   }
 
   "missing languages field" should "construct valid suggest string" in {
-    val expectedJson = """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":[],"output":"MyRepoName"},{"input":["user1","user2"],"output":"MyRepoName"}]}"""
+    val expectedJson = """[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":[],"output":"MyRepoName"},{"input":["user1","user2"],"output":"MyRepoName"}]"""
     val lang = Map[String,String]()
     val contributors = List(Contributor("user1","http://profileurl1","http://avatar_url1","user"),
       Contributor("user2","http://profileurl1","http://avatar_url1","user"))
@@ -173,7 +173,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
 
   "missing contributors field" should "construct valid suggest string" in {
     val expectedJson =
-      """{"fields":[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":["Python","Shell"],"output":"MyRepoName"},{"input":[],"output":"MyRepoName"}]}"""
+      """[{"input":["MyRepoName","MyRepoDesc"],"output":"MyRepoName"},{"input":["MyRepoName"],"output":"MyRepoName"},{"input":["Python","Shell"],"output":"MyRepoName"},{"input":[],"output":"MyRepoName"}]"""
     val lang = Map("Python" -> "9523","Shell" -> "3102")
     val contributors = List()
 
