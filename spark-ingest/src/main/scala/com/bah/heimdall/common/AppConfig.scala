@@ -6,6 +6,7 @@ import com.typesafe.config._
 import com.bah.heimdall.common.AppConstants._
 
 object AppConfig {
+  var envType:String = ""
   private var config = ConfigFactory.empty()
   def conf :Config = config
 

@@ -39,20 +39,22 @@ class KafkaProducer {
     * after the message send completes
     *
     * @param topic
-    * @param msg
+    * @param key
+    * @param message
     * @param conf
     * @return
     */
-  def sendMessageBlocking(topic:String, msg:KafkaMessage, conf:Config): Boolean ={
-    val messageRecord  = new ProducerRecord[String,String](topic,msg.key,msg.value)
+  def sendMessageBlocking(topic:String, key:String, message:String, conf:Config): Boolean ={
+    val messageRecord  = new ProducerRecord[String,String](topic,key,message)
 
     val status = Try(producer.send(messageRecord).get(conf.getInt(KAFKA_PRODUCER_TIMEOUT), TimeUnit.MILLISECONDS)) match {
       case Success(status) => {
-        println(s"Sent message for batchId:${msg.key} to topic:$topic successfully")
+        println("messageRecord======================"+messageRecord)
+        println(s"Sent message:$message to topic:$topic successfully")
         true
       }
       case Failure(ex) =>{
-        println(s"$STAGE_ERROR:Failed sending message for batchId:${msg.key} to topic:$topic")
+        println(s"$STAGE_ERROR:Failed sending message:$message to topic:$topic")
         ex.printStackTrace()
         false
       }

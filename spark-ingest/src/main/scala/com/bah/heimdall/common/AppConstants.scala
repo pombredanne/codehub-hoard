@@ -2,9 +2,10 @@ package com.bah.heimdall.common
 
 
 object AppConstants {
+  //config settings
   //Github settings
   //Enterprise github
-  val RUN_ENV = "ingest.env"
+  val RUN_ENV = "ingest.projects.env"
   val ENT_GITHUB_API_URL = "ingest.projects.github.enterpriseurl"
   val ENT_ACCESS_TOKEN = "ingest.projects.github.ent_accessToken"
   //Public github
@@ -13,18 +14,10 @@ object AppConstants {
   val PUB_ACCESS_TOKEN = "ingest.projects.github.pub_accessToken"
   val RESPONSE_PER_PAGE = "ingest.projects.github.httpReponsePerPage"
   val PROJECT_DOC_TYPE = "ingest.projects.github.docType"
-  val PROJECTS_INDEX_NAME = "ingest.projects.indexName"
-
-  //Sonar settings
-  val CODES_INDEX_NAME = "ingest.code.indexName"
-  val SONAR_API_LOCAL_BASE_URL="ingest.code.sonar.api_local_base_url"
-  val SONAR_API_REMOTE_BASE_URL="ingest.code.sonar.api_remote_base_url"
-  val SONAR_PROJECT_HEALTH_METRICS="ingest.code.sonar.health_metrics"
-
 
   //Elastic search
   val ES_ID_SEPARATOR = "_"
-
+  val PROJECTS_INDEX_NAME = "ingest.projects.indexName"
 
   //Stage Constants
   val STAGE_ERROR = "STAGE_ERROR"
@@ -32,7 +25,6 @@ object AppConstants {
   val ENTERPRISE = "ENTERPRISE"
   val ALL = "ALL"
   val SRC_GITHUB = "GITHUB"
-  val SRC_SONAR = "SONAR"
 
   //Kafka
   val KAFKA_BOOTSTRAP_SERVERS = "ingest.kafka.bootstrap_servers"

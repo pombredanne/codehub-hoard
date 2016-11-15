@@ -69,5 +69,5 @@ export SPARK_WORKER_MEMORY=1g
 export SPARK_EXECUTOR_MEMORY=512m
 export SPARK_WORKER_INSTANCES=1
 export SPARK_WORKER_CORES=1
-export SPARK_WORKER_DIR=${spark.worker.dir}
+export SPARK_WORKER_DIR=~/workspace/
 
