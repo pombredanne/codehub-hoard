@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 import logging
 import os
@@ -18,63 +20,32 @@ def filter_dependencies(repo):
             filtered_dependency.append(filter)
     return filtered_dependency
 
-
-def get_es_project(config,results):
-    returned_responses_collection = []
-    configurations = config['config']
-    for res in results:
-        query_data = {
-                      "query": {
-                        "bool": {
-                          "must": [
-                            { "match": { "project_name":  res['project_name'] }},
-                            { "match": { "organization": res['org']}}
-                          ]
-                        }
-                      }
-                    }
-        response = requests.get(configurations['stage_es_url']+'/projects/logs/_search', data=json.dumps(query_data))
-        returned_res = json.loads(response.text)
-        collected_response = {}
-        if returned_res['hits']['total'] > 0:
-            collected_response['filtered'] = filter_dependencies(res)
-            collected_response['returned_res'] = returned_res
-            returned_responses_collection.append(collected_response)
-    return returned_responses_collection
-
-
-def _make_elasticsearch_updates(config, returned_responses):
+def _make_elasticsearch_updates(config, repos):
     collected_ids = []
     collected_response = []
     configurations = config['config']
-    for ret in returned_responses:
-        project_id = ret['returned_res']['hits']['hits'][0]['_id']
-        filtered_repo_dependencies = ret['filtered']
-
-        if len(filtered_repo_dependencies) > 0:
-            data_json = {"componentDependencies": filtered_repo_dependencies}
-            update_query = {
-              "doc": data_json
-            }
-            ret_response = requests.post(configurations['stage_es_url']+'/projects/logs/'+project_id+'/_update', data=json.dumps(update_query))
-            if project_id not in collected_ids:
-                collected_ids.append(project_id)
-                collected_response.append(json.loads(ret_response.text))
+    for repo in repos:
+        data_json = {"componentDependencies": repo['dependency_content']}
+        update_query = {
+          "doc": data_json
+        }
+        ret_response = requests.post(configurations['stage_es_url']+'/projects/project/'+str(repo['_id'])+'/_update', data=json.dumps(update_query))
+        collected_response.append(json.loads(ret_response.text))
     return collected_response
 
 
 def _process_elasticsearch_update(config, results):
     logging.info(time.strftime("%c")+' talking to ES and adding project depedency attribute with processed data')
-    res_arr = get_es_project(config,results)
-    collected_response = _make_elasticsearch_updates(config, res_arr)
-    display_stats(config, collected_response)
-    
+    collected_response = _make_elasticsearch_updates(config, results)
+    #display_stats(config, collected_response)
+
 def display_stats(config, response_arr):
     logging.info(time.strftime("%c")+" ******The following "+str(len(response_arr)) + " projects have dependencies******")
     repos_just_updated = []
     configurations = config['config']
     for repo in response_arr:
-        response = requests.get(configurations['stage_es_url']+'/projects/logs/'+repo['_id'])
+        #print(repo['_id'])
+        response = requests.get(configurations['stage_es_url']+'/projects/project/'+'7501879_46727828')
         logging.info(json.loads(response.text))
 
         if repo['_shards']['successful'] == 1:
@@ -99,12 +70,23 @@ def read_processed_projects(config):
              data = []
     return json_repos
 
+def fetch_non_empty_dependencies(config, repos):
+    filtered_repos = []
+    for repo in repos:
+        filtered_dependency = filter_dependencies(repo)
+        repo['dependency_content'] = filtered_dependency
+        filtered_repos.append(repo)
+    print(filtered_repos[0])
+    return filtered_repos
+
+
+
 def automate_processes(config):
     logging.info(time.strftime("%c")+' Started')
     processed_combined_results = read_processed_projects(config)
-    print(processed_combined_results)
+    #print(processed_combined_results[0])
+    fetch_non_empty_dependencies(config, processed_combined_results)
     _process_elasticsearch_update(config,processed_combined_results)
-    #cleanup_after_update()
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from git import Repo
 import glob2
 import requests
@@ -19,6 +21,7 @@ def process_cloned_projects(repos):
         lists = glob2.glob(src_dir)
         repo_map = {}
         if(len(lists) > 0):
+            repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
             repo_map['src_list'] = lists
             repo_map['org'] = repo['org']

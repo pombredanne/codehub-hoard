@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 import logging
 import os
@@ -20,6 +22,7 @@ def process_java_projects(repos,config):
             pom_dir = repo['cloned_project_path']+'/**/pom.xml'
             lists = glob2.glob(pom_dir)
             repo_map = {}
+            repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
             repo_map['pom_list'] = lists
             repo_map['org'] = repo['org']
@@ -58,6 +61,7 @@ def parse_java_projects(repos_pom):
                     parsed_json = read_pom_content(pom)
                     dependency_arr = parse_aggregate(parsed_json)
                     dependency_content = dependency_content + dependency_arr
+                dependency_map['_id'] = repo['_id']
                 dependency_map['project_name'] = repo['project_name']
                 dependency_map['language'] = repo['language']
                 dependency_map['org'] = repo['org']
@@ -81,6 +85,7 @@ def parse_js_projects(repos_js_dep):
                          combined_content = combined_content + dependency_arr
                     except ValueError:
                          combined_content = []
+                    dependency_map['_id'] = repo['_id']
                     dependency_map['project_name'] = repo['project_name']
                     dependency_map['language'] = repo['language']
                     dependency_map['org'] = repo['org']
@@ -126,6 +131,7 @@ def process_js_projects(repos):
         combined_list = list(set(package_lists).union(bower_lists))
         repo_map = {}
         if(len(combined_list) > 0):
+            repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
             repo_map['dep_list'] = combined_list
             repo_map['org'] = repo['org']
@@ -311,7 +317,9 @@ def read_processed_projects(config):
 def automate_processes(config):
     logging.info(time.strftime("%c")+' Started')
     repos = read_cloned_projects(config)
+    #print(repos)
     processed_java_repos = process_java_projects(repos,config)
+    print(processed_java_repos)
     java_dependency_res = parse_java_projects(processed_java_repos)
     processed_js_repos = process_js_projects(repos)
     js_dependency_res = parse_js_projects(processed_js_repos)

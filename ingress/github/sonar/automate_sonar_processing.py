@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from git import Repo
 import glob2
 import requests
