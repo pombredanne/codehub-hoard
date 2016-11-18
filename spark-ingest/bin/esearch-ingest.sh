@@ -2,7 +2,7 @@
 
 set -e
 
-DATA_INPUT_DIR=~/stage/expt_spark/dev/data/esearch/input/github
+DATA_INPUT_DIR=~/stage/consolidation/dev/data/esearch/input/github
 
 #add sorting
 for dir in $DATA_INPUT_DIR/*/;

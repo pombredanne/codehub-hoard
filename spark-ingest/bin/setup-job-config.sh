@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-PROJECT_HOME=~/stage/expt_spark/heimdall-hoard/spark-ingest
-JOB_DIR=~/stage/expt_spark/JOB_DIR
-DIST_DIR=~/stage/expt_spark/heimdall-hoard/spark-ingest/target
-CLEAN_UP=~/stage/expt_spark/JOB_DIR/bin/cleanup.sh
+PROJECT_HOME=~/stage/consolidation/heimdall-hoard/spark-ingest
+JOB_DIR=~/stage/consolidation/JOB_DIR
+DIST_DIR=~/stage/consolidation/heimdall-hoard/spark-ingest/target
+CLEAN_UP=~/stage/consolidation/JOB_DIR/bin/cleanup.sh
 
 echo creating directory, setting up config and submitting job...
 cd "$PROJECT_HOME"

@@ -2,13 +2,13 @@
 
 set -e
 
-INSTALL_DIR=~/stage/expt_spark/ingest-tools
+INSTALL_DIR=~/stage/consolidation/ingest-tools
 SPARK_VERSION=spark-2.0.1-bin-hadoop2.7
 KAFKA_VERSION=kafka_2.10-0.10.0.1
 NIFI_VERSION=nifi-0.7.1
 SEARCH_HOME=elasticsearch-2.4.0
 KIBANA_HOME=kibana-4.6.1
-CREATE_TOPIC=~/stage/expt_spark/heimdall-hoard/spark-ingest/bin/create-kafka-topics.sh
+CREATE_TOPIC=~/stage/consolidation/heimdall-hoard/spark-ingest/bin/create-kafka-topics.sh
 
 #Start all services
 echo Starting Spark ...
@@ -16,7 +16,7 @@ $INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
 sleep 10
 
 echo Starting Nifi ...
-$INSTALL_DIR/$NIFI_VERSION/bin/nifi.sh restart
+#$INSTALL_DIR/$NIFI_VERSION/bin/nifi.sh restart
 sleep 10
 
 echo Starting Kafka Zookeeper ...
@@ -28,11 +28,11 @@ $INSTALL_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_DIR/$KAFKA_VERSIO
 
 sleep 20
 
-$CREATE_TOPIC $INSTALL_DIR/$KAFKA_VERSION
+#$CREATE_TOPIC $INSTALL_DIR/$KAFKA_VERSION
 
 
 echo Starting Elastic Search ...
-$INSTALL_DIR/$SEARCH_HOME/bin/elasticsearch &
+#$INSTALL_DIR/$SEARCH_HOME/bin/elasticsearch &
 
 sleep 10
 echo Starting Kibana ...

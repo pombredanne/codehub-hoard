@@ -25,12 +25,13 @@ def _make_elasticsearch_updates(config, repos):
     collected_response = []
     configurations = config['config']
     for repo in repos:
+        print(repo['_id'])
         data_json = {"componentDependencies": repo['dependency_content']}
         update_query = {
           "doc": data_json
         }
-        ret_response = requests.post(configurations['stage_es_url']+'/projects/project/'+str(repo['_id'])+'/_update', data=json.dumps(update_query))
-        collected_response.append(json.loads(ret_response.text))
+        #ret_response = requests.post(configurations['stage_es_url']+'/projects/project/'+repo['_id']+'/_update', data=json.dumps(update_query))
+        #collected_response.append(json.loads(ret_response.text))
     return collected_response
 
 

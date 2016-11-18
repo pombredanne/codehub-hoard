@@ -5,7 +5,7 @@ set -e
 #Prerequisites:
 # - Setup passwordless ssh to localhost
 
-INSTALL_DIR=~/stage/expt_spark/ingest-tools
+INSTALL_DIR=~/stage/consolidation/ingest-tools
 SPARK_VERSION=spark-2.0.1-bin-hadoop2.7
 KAFKA_VERSION=kafka_2.10-0.10.0.1
 NIFI_VERSION=nifi-0.7.1

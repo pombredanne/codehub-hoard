@@ -18,6 +18,7 @@ def process_java_projects(repos,config):
     repos_pom = []
     configurations = config['config']
     for repo in repos:
+        print(repo)
         if('cloned_project_path' in repo):
             pom_dir = repo['cloned_project_path']+'/**/pom.xml'
             lists = glob2.glob(pom_dir)
