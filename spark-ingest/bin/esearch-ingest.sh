@@ -19,12 +19,18 @@ do
 
   mkdir -p $outdirname
 
-  cat ${dir}part* > ${outdirname}elastic_data.json
+  for file in ${dir}part*; do
+    if [[ -f $file ]]; then
+        cat ${dir}part* > ${outdirname}elastic_data.json
 
+        curl -s -XPOST localhost:9200/_bulk --data-binary "@$outdirname/elastic_data.json"
+        break
+    fi
+  done
+  #cat ${dir}part* > ${outdirname}elastic_data.json
   #delete index now but it will be changed once delta indexing is ready
   #curl -X DELETE 'http://localhost:9200/projects/'
-  #TODO: check to see if file is empty
-  curl -s -XPOST localhost:9200/_bulk --data-binary "@$outdirname/elastic_data.json"
+  #curl -s -XPOST localhost:9200/_bulk --data-binary "@$outdirname/elastic_data.json"
 
   rm -r $dir
  fi

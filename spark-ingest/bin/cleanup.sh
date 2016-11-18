@@ -19,6 +19,7 @@ rm -r "$PROCESS_DATA_DIR"
 mkdir -p "$SEARCH_DATA_DIR/input"
 mkdir -p "$INGEST_DATA_DIR/input"
 mkdir -p "$PROCESS_DATA_DIR/input"
+mkdir -p "$PROCESS_DATA_DIR/input/updates"
 
 mkdir -p "$SEARCH_DATA_DIR/output"
 mkdir -p "$INGEST_DATA_DIR/output"
@@ -28,10 +29,10 @@ chmod -R 777 "$SEARCH_DATA_DIR"
 chmod -R 777 "$INGEST_DATA_DIR"
 chmod -R 777 "$PROCESS_DATA_DIR"
 
-curl -XDELETE 'http://localhost:9200/projects/'
-curl -XDELETE 'http://localhost:9200/code/'
+curl -XDELETE 'http://${elastic.server.url}/projects/'
+curl -XDELETE 'http://${elastic.server.url}/code/'
 
-curl -XPUT http://localhost:9200/projects/ -d '{
+curl -XPUT http://${elastic.server.url}/projects/ -d '{
     "mappings" : {
         "project" : {
             "properties" : {
