@@ -18,6 +18,7 @@ def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
     configurations = config['config']
     repos = []
+    temp_filtered_repos = []
     if configurations['env']  == 'PUBLIC':
         pub_repos = get_public_repos(config)
         repos = customize_repo_attributes_mapping(pub_repos)
@@ -27,12 +28,15 @@ def collect_repositries(config):
         repos = customize_ent_repo_attributes_mapping(orgs_users_ent)
         clone_enterprise_projects(repos,config)
     else:
-        pub_repos = get_public_repos(config)
-        pub_repos_custmoized = customize_repo_attributes_mapping(pub)
-        clone_public_projects(pub_repos_custmoized,config)
         orgs_users_ent = get_org_enterprise_repos(config) + get_users_enterprise_repos(config)
         ent_repos_customized = customize_ent_repo_attributes_mapping(orgs_users_ent)
-        clone_enterprise_projects(ent_repos_customized,config)
+        for repo in ent_repos_customized:
+            if repo['project_name'] not in ['DCCPILOT','CMRA','attune','rapid-ios','Alter','Apple','CAC-P1-TEST','Catapult']:
+                temp_filtered_repos.append(repo)
+        clone_enterprise_projects(temp_filtered_repos,config)
+        pub_repos = get_public_repos(config)
+        pub_repos_custmoized = customize_repo_attributes_mapping(pub_repos)
+        clone_public_projects(pub_repos_custmoized,config)
         repos = pub_repos_custmoized + ent_repos_customized
     return repos
 
@@ -156,14 +160,6 @@ def automate_processes(config):
     repos = collect_repositries(config)
     create_result_json(repos, config)
 
-    #clone_public_projects(repos)
-    # for repo in customized:
-    #     if repo['project_name'] in ['DCCPILOT','CMRA','attune','rapid-ios','Alter','Apple','CAC-P1-TEST','Catapult']:
-    #         print(repo)
-    #     else:
-    #         clone_ready.append(repo)
-    #
-    # #clone_enterprise_projects(clone_ready, config)
 
 
 if __name__ == "__main__":
