@@ -14,17 +14,8 @@
 			<include>spark*.jar</include>
 		  </includes>
 		</fileSet>
-		<!-- copy sonar and dependency -->
 		<fileSet>
-			<directory>../${basedir}/ingress</directory>
-			<outputDirectory>ingress</outputDirectory>
-		</fileSet>
-		<fileSet>
-			<directory>../${basedir}/sonar_dependencies</directory>
-			<outputDirectory>sonar_dependencies</outputDirectory>
-		</fileSet>
-		<fileSet>
-			<directory>${basedir}/target/bin</directory>
+			<directory>${basedir}/bin</directory>
 			<outputDirectory>bin</outputDirectory>
 			<includes>
 				<include>*.sh</include>
@@ -33,15 +24,13 @@
 			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/target/config</directory>
+			<directory>${basedir}/config</directory>
 			<outputDirectory>config</outputDirectory>
 			<includes>
 				<include>*.conf</include>
-				<include>*.xml</include>
 			</includes>
 		</fileSet>
-
-	</fileSets>
+	</fileSets>	
 </assembly>
 
 

@@ -230,6 +230,26 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>copy-sonarfiles</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/ingress</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../${basedir}/ingress/</directory>
+                                    <includes>
+                                        <include>*.*</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>app-properties</id>
                         <phase>package</phase>
                         <goals>
@@ -243,6 +263,7 @@
                                     <directory>${basedir}/config/</directory>
                                     <includes>
                                         <include>application.conf</include>
+                                        <include>*.xml</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>

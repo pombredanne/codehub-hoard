@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from git import Repo
 import glob2
 import requests
@@ -106,9 +108,11 @@ def read_result_file(res_dir):
 
 def automate_processes(config):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
-    res_dir = os.getcwd()+"/metric_result.json"
-    if os.path.exists(res_dir):
-        results = read_result_file(res_dir)
+    #res_dir = os.getcwd()+"/metric_result.json"
+    configurations = config['config']
+    sonar_result_path = configurations['cloned_projects_json_file_path']+"/sonar_health_metrics.json"
+    if os.path.exists(sonar_result_path):
+        results = read_result_file(sonar_result_path)
         print(results)
         process_elasticSearch_update(results, config)
     else:

@@ -13,63 +13,23 @@ from git import Repo
 
 import configparams
 
-
-def collect_repositories(config):
-    logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
-    configurations = config['config']
-    github_access_token = configurations['public_github_access_token']
-    repos = []
-    orgs = configurations['public_orgs']
-    for org in orgs:
-        r = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token=' + github_access_token)
-        orgs_reponsitories = json.loads(r.text)
-
-        for org_repo in orgs_reponsitories:
-            projects_name_git_url = {}
-            projects_name_git_url['project_name'] = org_repo['name']
-            projects_name_git_url['clone_url'] = org_repo['clone_url']
-            projects_name_git_url['org'] = org
-            repos.append(projects_name_git_url)
-    return repos
-
-
-def delete_directory(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
-
-
-def clone_projects(config, repos):
-    clone_dir = os.getcwd() + '/cloned_projects/'
-    logging.info(time.strftime("%c")+' removing repositories if already exists')
-    delete_directory(clone_dir)
-    logging.info(time.strftime("%c")+' cloning respositories in ' + clone_dir)
-
-    for repo in repos:
-        logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
-        clone_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
-
-        if not os.path.exists(clone_dir):
-            Repo.clone_from(_calculate_clone_url(config, repo['clone_url']), clone_dir)
-
-
-def process_cloned_projects(repos):
+def process_java_projects(repos,config):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
     repos_pom = []
-
+    configurations = config['config']
     for repo in repos:
-        pom_dir = os.getcwd() + '/cloned_projects/'+repo['org']+'/'+repo['project_name']+'/**/pom.xml'
-        lists = glob2.glob(pom_dir)
-        repo_map = {}
-
-        if len(lists) > 0:
+        print(repo)
+        if('cloned_project_path' in repo):
+            pom_dir = repo['cloned_project_path']+'/**/pom.xml'
+            lists = glob2.glob(pom_dir)
+            repo_map = {}
+            repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
             repo_map['pom_list'] = lists
             repo_map['org'] = repo['org']
+            repo_map['language'] = repo['language']
             repos_pom.append(repo_map)
-
     return repos_pom
-
-
 #
 # Private repos must have a username in the URL to authenticate.  We'll have this authentication in place for
 # non-private repositories too so it is consistent and we can have a getting bandwidth for API calls.
@@ -89,42 +49,50 @@ def _calculate_clone_url(config, url):
         raise ValueError("Unrecognized URL Protocol: %s" + url)
 
 
-def parse_projects(repos_pom):
+def parse_java_projects(repos_pom):
     logging.info(time.strftime("%c")+' traversing through projects')
     aggregate_results = []
-    for poms in repos_pom:
-        pom_files_arr = poms['pom_list']
-        dependency_content = []
-        dependency_map = {}
-        for pom in pom_files_arr:
-            parsed_json = read_pom_content(pom)
-            dependency_arr = parse_aggregate(parsed_json)
-            dependency_content = dependency_content + dependency_arr
-        dependency_map['project_name'] = poms['project_name']
-        dependency_map['org'] = poms['org']
-        dependency_map['dependency_content'] = dependency_content
-        aggregate_results.append(dependency_map)
+    for repo in repos_pom:
+        if('language' in repo):
+            if(repo['language'] == 'Java'):
+                pom_files_arr = repo['pom_list']
+                dependency_content = []
+                dependency_map = {}
+                for pom in pom_files_arr:
+                    parsed_json = read_pom_content(pom)
+                    dependency_arr = parse_aggregate(parsed_json)
+                    dependency_content = dependency_content + dependency_arr
+                dependency_map['_id'] = repo['_id']
+                dependency_map['project_name'] = repo['project_name']
+                dependency_map['language'] = repo['language']
+                dependency_map['org'] = repo['org']
+                dependency_map['dependency_content'] = dependency_content
+                aggregate_results.append(dependency_map)
     return aggregate_results
 
 def parse_js_projects(repos_js_dep):
     logging.info(time.strftime("%c")+' traversing through js projects')
     aggregate_results = []
-    for js_dep in repos_js_dep:
-        js_dep_files_arr = js_dep['dep_list']
-        combined_content = []
-        dependency_map = {}
-        for dep in js_dep_files_arr:
-            parsed_json = read_js_dep_content(dep)
-            dependency_arr = parse_js_aggregate(parsed_json)
-            try:
-                 combined_content = combined_content + dependency_arr
-            except ValueError:
-                 combined_content = []
-            dependency_map['project_name'] = js_dep['project_name']
-            dependency_map['org'] = js_dep['org']
-            if len(combined_content) > 0:
-                dependency_map['dependency_content'] = combined_content
-                aggregate_results.append(dependency_map)
+    for repo in repos_js_dep:
+        if('language' in repo):
+            if(repo['language'] == 'JavaScript'):
+                js_dep_files_arr = repo['dep_list']
+                combined_content = []
+                dependency_map = {}
+                for dep in js_dep_files_arr:
+                    parsed_json = read_js_dep_content(dep)
+                    dependency_arr = parse_js_aggregate(parsed_json)
+                    try:
+                         combined_content = combined_content + dependency_arr
+                    except ValueError:
+                         combined_content = []
+                    dependency_map['_id'] = repo['_id']
+                    dependency_map['project_name'] = repo['project_name']
+                    dependency_map['language'] = repo['language']
+                    dependency_map['org'] = repo['org']
+                    if len(combined_content) > 0:
+                        dependency_map['dependency_content'] = combined_content
+                        aggregate_results.append(dependency_map)
     return aggregate_results
 
 
@@ -164,9 +132,11 @@ def process_js_projects(repos):
         combined_list = list(set(package_lists).union(bower_lists))
         repo_map = {}
         if(len(combined_list) > 0):
+            repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
             repo_map['dep_list'] = combined_list
             repo_map['org'] = repo['org']
+            repo_map['language'] = repo['language']
             repos_js.append(repo_map)
     return repos_js
 
@@ -315,18 +285,51 @@ def cleanup_after_update():
     logging.info(time.strftime("%c")+' cleaning up cloned projects after elasticsearch updates or written to a file')
     delete_directory(clone_dir)
 
+def read_cloned_projects(config):
+    json_repos = []
+    configurations = config['config']
+    repos_json = configurations['cloned_projects_json_file_path']+"/cloned_repos.json"
+    with open(repos_json) as data_file:
+        try:
+             data = json.load(data_file)
+             json_repos = data
+        except ValueError:
+             data = []
+    return json_repos
+def create_result_json(processed_repos, config):
+    configurations = config['config']
+    dependencies_result_path = configurations['cloned_projects_json_file_path']+"/project_dependencies.json"
+    with open(dependencies_result_path, 'w') as outfile:
+        json.dump(processed_repos, outfile, indent=4, sort_keys=True, separators=(',', ':'))
+    return dependencies_result_path
+
+def read_processed_projects(config):
+    json_repos = []
+    configurations = config['config']
+    repos_json = configurations['cloned_projects_json_file_path']+"/project_dependencies.json"
+    with open(repos_json) as data_file:
+        try:
+             data = json.load(data_file)
+             json_repos = data
+        except ValueError:
+             data = []
+    return json_repos
 
 def automate_processes(config):
     logging.info(time.strftime("%c")+' Started')
-    repos = collect_repositories(config)
-    clone_projects(config, repos)
-    poms = process_cloned_projects(repos)
-    res = parse_projects(poms)
-    js_res = process_js_projects(repos)
-    js_ret_res = parse_js_projects(js_res)
-    combined_results = res + js_ret_res
-    _process_elasticsearch_update(config,combined_results)
-    cleanup_after_update()
+    repos = read_cloned_projects(config)
+    #print(repos)
+    processed_java_repos = process_java_projects(repos,config)
+    print(processed_java_repos)
+    java_dependency_res = parse_java_projects(processed_java_repos)
+    processed_js_repos = process_js_projects(repos)
+    js_dependency_res = parse_js_projects(processed_js_repos)
+    combined_results = java_dependency_res + js_dependency_res
+    create_result_json(combined_results, config)
+    processed_combined_results = read_processed_projects(config)
+    print(combined_results)
+    #_process_elasticsearch_update(config,combined_results)
+    #cleanup_after_update()
 
 
 if __name__ == "__main__":
