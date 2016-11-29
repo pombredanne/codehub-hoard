@@ -27,7 +27,7 @@ object AppConstants {
 
 
   //Stage Constants
-  val STAGE_ERROR = "STAGE_ERROR"
+  val STAGE_ERROR = "STAGE_ERROR:"
   val PUBLIC = "PUBLIC"
   val ENTERPRISE = "ENTERPRISE"
   val ALL = "ALL"

@@ -1,0 +1,31 @@
+language: java
+jdk: oraclejdk7
+sudo: false
+script:
+    - cd spark-ingest
+    - mvn clean package -DskipTests
+deploy:
+  - provider: s3
+    access_key_id: &1
+      secure: "RWsPVQ2dX5FzPyU0lPA93Z8/JXFfOfkM4K2L8U5St62rkRYtabodziI85eCFCVubijRMd62IKO5quvGz72E9t7QZvtWXjjQJ5AdbIhoQDtOzHyuUOBEuatsbnDeJ9TIeiLCjXQNDmh+mpETEJKAmOs/xCDGCdg+E9112Sk9z3t8="
+    secret_access_key: &2
+      secure: "UmsXkW9sa30bhYAJxyqcy3NugIfdnnsDUuT2RCusZTY+KnrRR/a2r63OfDAC5TcRuriOpyFj9nisM4c8OFYFXe8xd+fM3LdLAF6Xn5ql1EWPe1Qz4JZod1cLU03UiDyvGO2CG0aVBXSPy3f3OQ4Zr845Wg4XqjiqfbTevOCaM4Q="
+    local_dir: target
+    on: &3
+      repo: Project-Heimdall/heimdall-hoard
+      branch: feature/new-ingest-pipeline
+    bucket: ""
+    region: us-east-1
+    skip_cleanup: true
+    ⋮ # rest of S3 deployment
+  - provider: codedeploy
+    access_key_id: *1
+    secret_access_key: *2
+    bucket: ""
+    key: spark-ingest-1.0-SNAPSHOT-dist-assembly
+    bundle_type: zip
+    application:
+    deployment_group:
+    region: us-east-1
+    on: *3
+    skip_cleanup: true

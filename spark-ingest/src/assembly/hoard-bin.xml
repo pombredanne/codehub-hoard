@@ -14,7 +14,7 @@
 			<include>spark*.jar</include>
 		  </includes>
 		</fileSet>
-		<!-- copy sonar and dependency -->
+		<!-- copy sonar and dependency files-->
 		<fileSet>
 			<directory>../${basedir}/ingress</directory>
 			<outputDirectory>ingress</outputDirectory>
@@ -40,7 +40,13 @@
 				<include>*.xml</include>
 			</includes>
 		</fileSet>
-
+		<fileSet>
+			<directory>${basedir}/</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>appspec.yml</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 </assembly>
 

@@ -58,5 +58,6 @@ curl -XPUT http://${elastic.server.url}/projects/ -d '{
     }
 }'
 
+#TODO add mapping for code index
 
 echo "Cleanup complete"

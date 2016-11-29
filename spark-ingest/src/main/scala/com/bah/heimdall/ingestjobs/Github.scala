@@ -38,7 +38,7 @@ object Github {
     val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
 
     //local mode
-    val sc = new SparkContext(new SparkConf().setAppName("Ingest Project Data").setMaster("local[1]"))
+    val sc = new SparkContext(new SparkConf().setAppName("Ingest Project Data"))
 
     val runEnv = AppConfig.conf.getString(RUN_ENV)
     println(s"Project run environment is set to $runEnv")
