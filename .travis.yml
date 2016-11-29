@@ -15,7 +15,7 @@ deploy:
       repo: Project-Heimdall/heimdall-hoard
       branch: feature/new-ingest-pipeline
     bucket: dev-heimdall-hoard-codedeploy
-    region: us-east-1d
+    region: us-east-1
     skip_cleanup: true
   - provider: codedeploy
     access_key_id: *1
@@ -25,6 +25,6 @@ deploy:
     bundle_type: zip
     application: dev-heimdall-hoard-app
     deployment_group: dev-heimdall-hoard-group
-    region: us-east-1d
+    region: us-east-1
     on: *3
     skip_cleanup: true
