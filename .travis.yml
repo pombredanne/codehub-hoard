@@ -14,18 +14,18 @@ deploy:
     on: &3
       repo: Project-Heimdall/heimdall-hoard
       branch: feature/new-ingest-pipeline
-    bucket: ""
-    region: us-east-1
+    bucket: dev-heimdall-hoard-codedeploy
+    region: us-east-1d
     skip_cleanup: true
     ⋮ # rest of S3 deployment
   - provider: codedeploy
     access_key_id: *1
     secret_access_key: *2
-    bucket: ""
+    bucket: dev-heimdall-hoard-codedeploy
     key: spark-ingest-1.0-SNAPSHOT-dist-assembly
     bundle_type: zip
-    application:
-    deployment_group:
-    region: us-east-1
+    application: dev-heimdall-hoard-app
+    deployment_group: dev-heimdall-hoard-group
+    region: us-east-1d
     on: *3
     skip_cleanup: true
