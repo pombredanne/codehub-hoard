@@ -2,13 +2,11 @@ language: java
 jdk: oraclejdk7
 sudo: false
 script:
-    - cd spark-ingest
-    - mvn clean package -DskipTests
-
+  - cd spark-ingest
+  - mvn clean package -DskipTests
 before_deploy:
   - mkdir -p dpl_cd_upload
-  - mv spark-ingest/target/spark-ingest-1.0-SNAPSHOT-dist-assembly.zip dpl_cd_upload/spark-ingest-1.0-SNAPSHOT-dist-assembly.zip
-
+  - cp target/spark-ingest-1.0-SNAPSHOT-dist-assembly.zip dpl_cd_upload
 deploy:
   - provider: s3
     access_key_id: &1
