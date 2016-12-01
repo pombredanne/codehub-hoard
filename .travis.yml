@@ -1,12 +1,18 @@
 language: java
 jdk: oraclejdk7
 sudo: false
+env:
+  global:
+  - HEIMDALL_VERSION_NUMBER=1.0.0
+  - HEIMDALL_BUILD_LABEL=$HEIMDALL_VERSION_NUMBER.$TRAVIS_BUILD_NUMBER-pre-alpha-$TRAVIS_BRANCH
+  - HEIMDALL_BRANCH=$TRAVIS_BRANCH
+  - HEIMDALL_PACKAGE_NAME=spark-ingest-1.0-SNAPSHOT-dist-assembly.zip
 script:
   - cd spark-ingest
   - mvn clean package -DskipTests
 before_deploy:
   - mkdir -p dpl_cd_upload
-  - cp target/spark-ingest-1.0-SNAPSHOT-dist-assembly.zip dpl_cd_upload
+  - cp target/$HEIMDALL_PACKAGE_NAME dpl_cd_upload
 deploy:
   - provider: s3
     access_key_id: &1
@@ -16,7 +22,7 @@ deploy:
     local_dir: dpl_cd_upload
     on: &3
       repo: Project-Heimdall/heimdall-hoard
-      branch: feature/new-ingest-pipeline
+      branch: $HEIMDALL_BRANCH
     bucket: dev-heimdall-hoard-codedeploy
     region: us-west-2
     skip_cleanup: true
@@ -24,7 +30,7 @@ deploy:
     access_key_id: *1
     secret_access_key: *2
     bucket: dev-heimdall-hoard-codedeploy
-    key: spark-ingest-1.0-SNAPSHOT-dist-assembly.zip
+    key: $HEIMDALL_PACKAGE_NAME
     bundle_type: zip
     application: dev-heimdall-hoard-app
     deployment_group: dev-heimdall-hoard-group

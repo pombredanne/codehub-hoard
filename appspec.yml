@@ -53,7 +53,7 @@ files:
 # If you are not running any commands on the Amazon EC2 instance, then remove
 #   the "hooks" section altogether. A blank or incomplete "hooks" section
 #   may cause associated deployments to fail.
-#hooks:
+hooks:
 # For each deployment lifecycle event, specify multiple "location" entries
 #   if you want to run multiple scripts during that event.
 # You can specify "timeout" as the number of seconds to wait until failing the deployment
@@ -77,9 +77,9 @@ files:
 # During the ApplicationStop deployment lifecycle event, run the commands
 #   in the script specified in "location" starting from the root of the
 #   revision's file bundle.
-#  ApplicationStop:
-#    - location: ops/stop_app.sh
-#      timeout: 300
+  ApplicationStop:
+    - location: bin/check-running-apps.sh
+      timeout: 600
 #    - location:
 #      timeout:
 #      runas:
