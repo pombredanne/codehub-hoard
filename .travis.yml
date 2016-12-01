@@ -24,7 +24,7 @@ deploy:
     access_key_id: *1
     secret_access_key: *2
     bucket: dev-heimdall-hoard-codedeploy
-    key: spark-ingest-1.0-SNAPSHOT-dist-assembly
+    key: spark-ingest-1.0-SNAPSHOT-dist-assembly.zip
     bundle_type: zip
     application: dev-heimdall-hoard-app
     deployment_group: dev-heimdall-hoard-group
