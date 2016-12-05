@@ -11,7 +11,7 @@ KAFKA_VERSION=kafka_2.10-0.10.0.1
 NIFI_VERSION=nifi-0.7.1
 
 echo Stopping Spark ...
-$INSTALL_DIR/$SPARK_VERSION/sbin/stop-all.sh
+#$INSTALL_DIR/$SPARK_VERSION/sbin/stop-all.sh
 sleep 10
 
 echo Stopping Nifi ...

@@ -40,7 +40,7 @@ tar zxvf $TEMP/${NIFI_VERSION}-bin.tar.gz -C $INSTALL_DIR/
 
 #change nifi default port for the webapp from 8080(which conflicts with spark port) to 8088
 sed -i -e 's/nifi.web.http.port=8080/nifi.web.http.port=8088/' $INSTALL_DIR/$NIFI_VERSION/conf/nifi.properties
-
+#sed -i -e 's/nifi.web.http.port=8080/nifi.web.http.port=8088/' ~/stage/consolidation/ingest-tools/nifi-0.7.1/conf/nifi.properties
 rm -r tmp
 
 echo setup complete!

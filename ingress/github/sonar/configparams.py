@@ -32,6 +32,8 @@ def _read_config(args):
         config['install_sonar_server'] = args.install_sonar_server
     if ('install_sonar_runner' in args) and (args.install_sonar_server is not None):
         config['install_sonar_runner'] = args.install_sonar_runner
+    if ('topic' in args) and (args.topic is not None):
+        config['topic'] = args.topic
 
     _convert_public_orgs(config)
     _convert_sonar_metrics(config)
@@ -53,8 +55,12 @@ def _parse_commandline():
     parser.add_argument('-config', '--config',
                         help='the config file to use for the program [default: ingest.conf]')
 
+    parser.add_argument('-topic', '--topic',
+                        help='the config file to use for the program [default:CLONED_DATA_QUEUE]')
+    parser.add_argument('-consumer_group', '--consumer_group',
+                        help='the config file to use for the program [default: ]')
     parser.add_argument('-env', '--env',
-                        help='the config file to use for the program [default: ingest.conf]')
+                        help='the config file to use for the program [default: public]')
 
     parser.add_argument('-update', '--update',
                         help='dependencies result will either be written to a file or ES will be updated [default: results.out]',

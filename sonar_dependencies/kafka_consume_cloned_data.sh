@@ -1,4 +1,4 @@
 #!/bin/bash
 cd ~/stage/consolidation/heimdall-hoard/ingress/github/sonar
 pip install -r requirements.txt
-python process_sonar.py --install_sonar_runner
+./process_sonar_messages.py --topic CLONED_DATA_QUEUE --install_sonar_runner

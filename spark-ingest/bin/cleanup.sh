@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 #Temporary script until we add batchid for every run
-mkdir -p ~/stage/expt_spark/dev/data
+mkdir -p ~/stage/consolidation/dev/data
 
-SEARCH_DATA_DIR=~/stage/expt_spark/dev/data/esearch/
-INGEST_DATA_DIR=~/stage/expt_spark/dev/data/ingest/
-PROCESS_DATA_DIR=~/stage/expt_spark/dev/data/process/
+SEARCH_DATA_DIR=~/stage/consolidation/dev/data/esearch/
+INGEST_DATA_DIR=~/stage/consolidation/dev/data/ingest/
+PROCESS_DATA_DIR=~/stage/consolidation/dev/data/process/
 
 rm -r "$SEARCH_DATA_DIR"
 rm -r "$INGEST_DATA_DIR"

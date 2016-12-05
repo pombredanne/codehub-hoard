@@ -6,13 +6,16 @@ import requests
 import json
 import xmltodict
 import os
-import shutil
-import configparams,automate_sonar_dependencies
+import shutil,pickle
+import configparams,automate_sonar_dependencies,kafkaProducer
 import time
 import logging
 from subprocess import call,check_output, run
 import subprocess
 from os.path import expanduser
+from kafka import KafkaConsumer
+from kafka import KafkaProducer
+from pykafka import KafkaClient
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
@@ -111,6 +114,14 @@ def customize_repo_attributes_mapping(orgs_reponsitories):
 def delete_directory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
+def setup_cloning_dir(clone_org_repo,clone_org):
+    if os.path.exists(clone_org_repo):
+        shutil.rmtree(clone_org_repo)
+    if os.path.exists(clone_org):
+        os.chdir(clone_org)
+    else:
+        os.makedirs(clone_org)
+        os.chdir(clone_org)
 
 def clone_public_projects(repos,config):
     configurations = config['config']
@@ -118,17 +129,18 @@ def clone_public_projects(repos,config):
     env_home = expanduser("~")
     cloned_repos_dir = env_home + '/cloned_projects/'
     logging.info(time.strftime("%c")+' removing repositories if already exists')
-    #delete_directory(cloned_repos_dir)
     logging.info(time.strftime("%c")+' cloning respositories in ' + cloned_repos_dir)
 
     for repo in repos:
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
-        clone_dir = env_home + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
+        clone_org_repo = env_home + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
+        clone_org = env_home + '/cloned_projects/'+repo['org']
         clone_buffer = env_home + '/clonning/'+repo['org']+'/'+repo['project_name']
-        if not os.path.exists(clone_buffer):
-            delete_directory(clone_dir)
-            Repo.clone_from(repo['clone_url'], clone_dir+"...buffering")
-            os.rename(clone_dir+"...buffering", clone_dir)
+        curr_dir = os.getcwd()
+        print(curr_dir)
+        setup_cloning_dir(clone_org_repo,clone_org)
+        run(["git","clone",repo['clone_url']])
+
 
 def clone_enterprise_projects(repos,config):
     configurations = config['config']
@@ -136,31 +148,21 @@ def clone_enterprise_projects(repos,config):
     env_home = expanduser("~")
     cloned_repos_dir = env_home + '/cloned_projects/'
     logging.info(time.strftime("%c")+' removing repositories if already exists')
-    #delete_directory(cloned_repos_dir)
     logging.info(time.strftime("%c")+' cloning respositories in ' + cloned_repos_dir)
 
     for repo in repos:
         logging.info(time.strftime("%c")+' cloning ' + repo['project_name'] + ' repo of '+ repo['org'])
-        clone_dir = env_home + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
-        clone_buffer = env_home + '/clonning/'+repo['org']+'/'+repo['project_name']
-        if not os.path.exists(clone_buffer):
-            delete_directory(clone_dir)
-            Repo.clone_from(repo['clone_url'], clone_dir+"...buffering")
-            os.rename(clone_dir+"...buffering", clone_dir)
-
-def create_result_json(repos, config):
-    configurations = config['config']
-    result_path = configurations['cloned_projects_json_file_path']
-    result_json_dir = result_path+"/cloned_repos.json"
-    with open(result_json_dir, 'w') as outfile:
-        json.dump(repos, outfile, indent=4, sort_keys=True, separators=(',', ':'))
-    return result_path
+        clone_org_repo = env_home + '/cloned_projects/'+repo['org']+'/'+repo['project_name']
+        clone_org = env_home + '/cloned_projects/'+repo['org']
+        curr_dir = os.getcwd()
+        print(curr_dir)
+        setup_cloning_dir(clone_org_repo,clone_org)
+        run(["git","clone",repo['clone_url']])
 
 def automate_processes(config):
     repos = collect_repositries(config)
-    create_result_json(repos, config)
-
-
+    for repo in repos:
+        kafkaProducer.publish_kafka_message(repo,config)
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()

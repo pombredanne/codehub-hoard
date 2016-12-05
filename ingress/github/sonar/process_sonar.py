@@ -3,23 +3,42 @@
 from git import Repo
 import glob2
 import requests
-import json
+import json,decimal
 import xmltodict
 import os
 import shutil
-import configparams,automate_sonar_dependencies
+import configparams,automate_sonar_dependencies,kafkaProducer,process_es
 import time
 import logging
 from subprocess import call,check_output, run
-import subprocess
+import subprocess,pickle
 
-def process_cloned_projects(repos):
+def process_cloned_projects_b(repos):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
     repos_src = []
     for repo in repos:
+        if repo["cloned_project_path"] is not None:
+            src_dir = repo['cloned_project_path']+'/*/'
+            lists = glob2.glob(src_dir)
+            repo_map = {}
+            if(len(lists) > 0):
+                repo_map['_id'] = repo['_id']
+                repo_map['project_name'] = repo['project_name']
+                repo_map['src_list'] = lists
+                repo_map['org'] = repo['org']
+                repo_map['language'] = repo['language']
+                repo_map['root_dir'] = repo['cloned_project_path']
+                repos_src.append(repo_map)
+    return repos_src
+
+def process_cloned_projects(repo):
+    logging.info(time.strftime("%c")+' collecting pom files recursively')
+    repo_map = {}
+    print("repo cloned_project_path")
+    print(repo)
+    if "cloned_project_path" in repo and repo["cloned_project_path"]is not None:
         src_dir = repo['cloned_project_path']+'/*/'
         lists = glob2.glob(src_dir)
-        repo_map = {}
         if(len(lists) > 0):
             repo_map['_id'] = repo['_id']
             repo_map['project_name'] = repo['project_name']
@@ -27,14 +46,16 @@ def process_cloned_projects(repos):
             repo_map['org'] = repo['org']
             repo_map['language'] = repo['language']
             repo_map['root_dir'] = repo['cloned_project_path']
-            repos_src.append(repo_map)
-    return repos_src
+            #repos_src.append(repo_map)
+    return repo_map
 
 def build_sonar_project_config(repos_src,config):
-    runner_dir = automate_sonar_dependencies.install_sonar_runner_dependencies(config)
-    for repo in repos_src:
-        writeToConfigFile(repo)
-        run_sonar_script(repo['root_dir'],runner_dir)
+    #runner_dir = automate_sonar_dependencies.install_sonar_runner_dependencies(config)
+    runner_dir = install_sonar_runner_dependencies(config)
+    print(runner_dir)
+    #for repo in repos_src:
+    writeToConfigFile(repos_src)
+    run_sonar_script(repos_src['root_dir'],runner_dir)
 
 
 def writeToConfigFile(repo):
@@ -67,27 +88,28 @@ def install_sonar_runner_dependencies(config):
     configurations = config['config']
     runner_dir=''
     if(configurations['install_sonar_runner']):
-        runner_dir=install_sonar_runner(config)
+        runner_dir=install_sonar_runner(config,os.getcwd())
     return runner_dir
 
-def install_sonar_runner(config):
+def install_sonar_runner(config,curr_dir):
     configurations = config['config']
-    if not os.path.exists("sonar_runner_dir"):
-        os.makedirs("sonar_runner_dir")
-    os.chdir("sonar_runner_dir")
-    if not os.path.exists("sonar-runner-2.4"):
-        run(["wget", configurations['sonar_runner_url']],check=True)
-        run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
-    runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
+    # if not os.path.exists(curr_dir+"/sonar_runner_dir"):
+    #     os.makedirs(curr_dir+"/sonar_runner_dir")
+
+    #os.chdir(curr_dir+"/sonar_runner_dir")
+    #if not os.path.exists("sonar-runner-2.4"):
+        #run(["wget", configurations['sonar_runner_url']],check=True)
+        #run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
+    runner_dir = '/Users/nathanielsolomon/stage/consolidation/heimdall-hoard/ingress/github/sonar/sonar_runner_dir/sonar-runner-2.4/bin/sonar-runner'
     return runner_dir
 
 
 def make_sonar_api_call(processed_repos,config):
-    filtered_repo = []
-    for repo in processed_repos:
-        repo['metrics'] = process_sonar_api_call(repo,config)
-        filtered_repo.append(repo)
-    return filtered_repo
+    #filtered_repo = {}
+    #for repo in processed_repos:
+    processed_repos['metrics'] = process_sonar_api_call(processed_repos,config)
+    #filtered_repo.append(repo)
+    return processed_repos
 
 
 def process_sonar_api_call(repo,config):
@@ -97,8 +119,11 @@ def process_sonar_api_call(repo,config):
 
     res = '_response'
     for metric in metrics_list:
+        print("In updating ptoblems....")
+        print(repo['project_name'])
         returned_res = requests.get(configurations['sonar_api_local_base_url']+'?resource='+repo['project_name']+"&metrics="+metric)
         returned_json = {}
+        print(returned_res)
         if(returned_res.status_code == 200):
             if(len(json.loads(returned_res.text)) > 0):
                 if 'msr' in json.loads(returned_res.text)[0]:
@@ -113,33 +138,48 @@ def process_sonar_api_call(repo,config):
 
 def create_result_json(filtered_repos, config):
     configurations = config['config']
-    sonar_result_path = configurations['cloned_projects_json_file_path']+"/sonar_health_metrics.json"
-    with open(sonar_result_path, 'w') as outfile:
-        json.dump(filtered_repos, outfile, indent=4, sort_keys=True, separators=(',', ':'))
+    sonar_result_path = os.getcwd()+"/sonar_health_metrics.json"
+    collected_metrics = []
+    for repo_metric in filtered_repos:
+        collected_metrics.append(repo_metric)
+    with open(sonar_result_path, 'a+') as outfile:
+        for metrics in collected_metrics:
+            json.dump(metrics, outfile, indent=4, sort_keys=True, separators=(',', ':'))
+        outfile.write(',')
     return sonar_result_path
 
 def read_cloned_projects(config):
+    json_map = {}
     json_repos = []
     configurations = config['config']
-    repos_json = configurations['cloned_projects_json_file_path']+"/cloned_repos.json"
+    #repos_json = configurations['cloned_projects_json_file_path']+"/cloned_repos.json"
+    repos_json = os.getcwd()+"/cloned_repos_data.json"
+    #print(repos_json)
     with open(repos_json) as data_file:
         try:
-             data = json.load(data_file)
-             json_repos = data
+             #print(data_file)
+             for g in data_file:
+                 json_repos.append(g)
+                 #json_map = g
+                 #json_repos.append(json_map)
+                 print(json_repos)
+             #data = json.load(data_file)
+             print("data")
+             #json_repos = data
         except ValueError:
              data = []
     return json_repos
 
-def automate_processes(config):
+def automate_processes(config,repo_json):
     sonar_dir = os.getcwd()+"/**/sonar-runner"
     configurations = config['config']
-    repos = read_cloned_projects(config)
-    processed_repos = process_cloned_projects(repos)
-    build_sonar_project_config(processed_repos,config)
-    filtered_repos = make_sonar_api_call(processed_repos,config)
-    create_result_json(filtered_repos,config)
-
-if __name__ == "__main__":
-    parsed = configparams._parse_commandline()
-    config = configparams.main(parsed)
-    automate_processes(config)
+    #repo_json = pickle.loads(repo)
+    if bool(repo_json):
+        if repo_json is not None:
+            processed_repos = process_cloned_projects(repo_json)
+            if bool(processed_repos):
+                build_sonar_project_config(processed_repos,config)
+                filtered_repos = make_sonar_api_call(processed_repos,config)
+                #kafkaProducer.publish_kafka_sonar_metrics(filtered_repos,config)
+                return filtered_repos
+        #         #process_es.automate_processes(config,filtered_repos)

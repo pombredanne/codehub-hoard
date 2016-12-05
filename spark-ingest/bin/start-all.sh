@@ -16,15 +16,15 @@ $INSTALL_DIR/$SPARK_VERSION/sbin/start-all.sh
 sleep 10
 
 echo Starting Nifi ...
-#$INSTALL_DIR/$NIFI_VERSION/bin/nifi.sh restart
+$INSTALL_DIR/$NIFI_VERSION/bin/nifi.sh restart
 sleep 10
 
 echo Starting Kafka Zookeeper ...
-$INSTALL_DIR/$KAFKA_VERSION/bin/zookeeper-server-start.sh $INSTALL_DIR/$KAFKA_VERSION/config/zookeeper.properties > /dev/null 2>&1 &
+#$INSTALL_DIR/$KAFKA_VERSION/bin/zookeeper-server-start.sh $INSTALL_DIR/$KAFKA_VERSION/config/zookeeper.properties > /dev/null 2>&1 &
 sleep 10
 
 echo Starting Kafka ...
-$INSTALL_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
+#$INSTALL_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
 
 sleep 20
 

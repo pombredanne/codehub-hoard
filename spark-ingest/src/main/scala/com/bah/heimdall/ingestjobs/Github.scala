@@ -27,7 +27,7 @@ object Github {
       println("Usage: spark-submit with params <configFile> <outputPath>")
       System.exit(0)
     }
-
+    val configFile = args(0)
     AppConfig(configFile)
     val batchId = new Date().getTime();
     val outPath = args(1) + "/"+ batchId
