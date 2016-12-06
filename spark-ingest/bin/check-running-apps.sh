@@ -6,7 +6,8 @@
 PROCESS_NAME_ENDING="ingest.sh"
 
 pids=$(pgrep -f $PROCESS_NAME_ENDING)
-while [ "$pids" -ne "" ]; do
+while [ "$pids" != "" ]; do
+    echo "Waiting for job to finish .."
     sleep 10
     pids=$(pgrep -f $PROCESS_NAME_ENDING)
 done

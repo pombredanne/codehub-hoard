@@ -15,6 +15,8 @@ object DataOutput {
     val outputRdd = reformatJsonForElastic(lineRdd)
 
     outputRdd.saveAsTextFile(outputPath)
+
+    sc.stop
   }
 
   def stripBrackets(jsonline: String): String = {

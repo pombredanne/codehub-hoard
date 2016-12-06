@@ -13,6 +13,10 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
 
+/**
+  * Pulls Sonar metrics data (public, enterprise, both) using the SOnarrest api. It filters/enriches
+  * data that is needed for Stage and creates domain model objects.
+  */
 object Sonar extends GithubBase{
 
   implicit val formats = DefaultFormats
@@ -63,6 +67,8 @@ object Sonar extends GithubBase{
     val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
+
+    sc.stop
   }
 
   def pullData(env:String, orgsRdd: RDD[JValue]): RDD[String] = {
@@ -110,7 +116,6 @@ object Sonar extends GithubBase{
     )
     metrics
   }
-
 
   def getMetrics(metrics:JValue): List[Map[String,String]] = {
     val metricsMap = (metrics \ "msr").extract[List[Map[String,String]]]

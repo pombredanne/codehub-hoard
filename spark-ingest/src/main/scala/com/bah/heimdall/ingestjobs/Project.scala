@@ -1,5 +1,8 @@
 package com.bah.heimdall.ingestjobs
 
+/**
+  * Domain model for the Github data
+  */
 object Project {
   case class Org(organization:String, organization_url:String, org_avatar_url:String, org_type:String)
   case class OrgRepo(stage_source:String,

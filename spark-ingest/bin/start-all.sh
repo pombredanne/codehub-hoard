@@ -9,7 +9,7 @@ echo $INGEST_TOOLS
 SPARK_VERSION=spark-2.0.1-bin-hadoop2.7
 KAFKA_VERSION=kafka_2.10-0.10.0.1
 NIFI_VERSION=nifi-0.7.1
-SEARCH_HOME=elasticsearch-2.4.0
+#SEARCH_HOME=elasticsearch-2.4.0
 #KIBANA_HOME=kibana-4.6.1
 
 #Start all services

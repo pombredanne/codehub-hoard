@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#Temporary script until we add batchid for every run
-
 DATA_DIR=${ingest.data.dir}
 
 if [ ! -d $DATA_DIR ]; then
  mkdir -p $DATA_DIR
+else
+ exit
 fi
 
 SEARCH_DATA_DIR="${DATA_DIR}/esearch/"
@@ -33,17 +33,24 @@ curl -XDELETE 'http://${elastic.server.url}/projects/'
 curl -XDELETE 'http://${elastic.server.url}/code/'
 
 curl -XPUT http://${elastic.server.url}/projects/ -d '{
-    "mappings" : {
-        "project" : {
-            "properties" : {
-                "project_name" : {
-                    "type" : "string"
+    "mappings": {
+        "project": {
+            "properties": {
+                "project_name": {
+                    "type": "string",
+                      "analyzer": "title_analyzer"
                 },
-                "project_description" : {
-                    "type" : "string"
+                "project_description": {
+                    "type": "string",
+                    	"analyzer": "grimdall_analyzer"
                 },
-                "content" : {
-                    "type" : "string"
+                "content": {
+                    "type": "string",
+                    	"analyzer": "grimdall_analyzer"
+                },
+                "language": {
+                	"type": "string",
+                		"analyzer": "language_analyzer"
                 },
                 "contributors_list" : {
                     "type" : "object"
@@ -52,6 +59,55 @@ curl -XPUT http://${elastic.server.url}/projects/ -d '{
                     "type" : "completion",
                     "analyzer" : "simple",
                     "search_analyzer" : "simple"
+                }
+            }
+        }
+    },
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "title_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "char_filter": "my_char",
+                    "filter": ["lowercase","my_synonym_filter","edgy"]
+                },
+                "grimdall_analyzer": {
+                	"type": "custom",
+                    "tokenizer": "standard",
+                    "char_filter": "my_char",
+                    "filter": ["lowercase","my_synonym_filter","my_stop","my_snow"]
+                },
+                "language_analyzer": {
+                	"type": "custom",
+                    "tokenizer": "standard",
+                    "char_filter": "my_char",
+                    "filter": ["lowercase","my_synonym_filter","edgy"]
+                }
+            },
+            "filter": {
+                "edgy": {
+                    "type": "edge_ngram",
+                    "min_gram": "2",
+                    "max_gram": "10"
+                },
+                "my_synonym_filter": {
+                    "type": "synonym",
+					"synonyms": ["javascript=>js"]
+                },
+                "my_stop": {
+                	"type": "stop",
+                	"stopwords": "_english_"
+                },
+                "my_snow": {
+                	"type": "snowball",
+                	"language": "English"
+                }
+            },
+            "char_filter": {
+            	"my_char": {
+            		"type": "mapping",
+                	"mappings": ["++ => plusplus", "# => sharp"]
                 }
             }
         }

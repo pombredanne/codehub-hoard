@@ -17,7 +17,11 @@ import org.json4s.jackson.Serialization.write
 import scala.collection.immutable.List
 import scala.collection.mutable.ArrayBuffer
 
-object Github {
+/**
+  * Pulls Github data (public, enterprise, both) using the Github rest api. It filters/enriches
+  * data that is needed for Stage and creates domain model objects.
+  */
+object Github extends GithubBase{
 
   implicit val formats = DefaultFormats
 
@@ -39,6 +43,8 @@ object Github {
 
     //local mode
     val sc = new SparkContext(new SparkConf().setAppName("Ingest Project Data"))
+    //print configs
+    //sc.getConf.toDebugString()
 
     val runEnv = AppConfig.conf.getString(RUN_ENV)
     println(s"Project run environment is set to $runEnv")
@@ -67,42 +73,8 @@ object Github {
     val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
-  }
 
-  def isPublic(env:String) = (env == "PUBLIC")
-
-  def getSourceUrl(env:String) = {
-   if(isPublic(env)) AppConfig.conf.getString(PUB_GITHUB_API_URL) else AppConfig.conf.getString(ENT_GITHUB_API_URL)
-  }
-
-  def getAccessToken(env:String) = {
-    val accessToken = if(isPublic(env)) AppConfig.conf.getString(PUB_ACCESS_TOKEN) else AppConfig.conf.getString(ENT_ACCESS_TOKEN)
-    s"access_token=$accessToken"
-  }
-
-  def getPublicOrgsList(): Array[String] = {
-    AppConfig.conf.getString(ORGS).split(",").map(getSourceUrl(PUBLIC) + "users/" + _ +"?"+ getAccessToken(PUBLIC))
-  }
-
-  def getEnterpriseOrgTypesList(): Array[String] = {
-    "organizations,users".split(",").map(getSourceUrl(ENTERPRISE) + _ +"?since=0&per_page=100&"+ getAccessToken(ENTERPRISE))
-  }
-
-  def getOrgData(url: String): JValue = {
-    getJsonResponse(url, false)
-  }
-
-  def getOrgRepos(env:String, orgRepoUrl: String): JValue = {
-    getJsonResponse(s"$orgRepoUrl?" + getAccessToken(env), false)
-  }
-
-  def getPagedRepoProperties(env:String, org: String, repoName: String, propertyName: String): ArrayBuffer[JValue] = {
-    val respPerPage = if (AppConfig.conf.getInt(RESPONSE_PER_PAGE) > 0) AppConfig.conf.getInt(RESPONSE_PER_PAGE) else 100
-    getResponseWithPagedData(getSourceUrl(env) + s"repos/$org/$repoName/$propertyName?since=0&per_page=$respPerPage&" + getAccessToken(env), true)
-  }
-
-  def getRepoProperties(env:String, org: String, repoName: String, propertyName: String): String = {
-    getResponse(getSourceUrl(env) + s"repos/$org/$repoName/$propertyName?" + getAccessToken(env), true)
+    sc.stop
   }
 
   def pullData(env:String, orgsRdd: RDD[JValue]): RDD[String] = {

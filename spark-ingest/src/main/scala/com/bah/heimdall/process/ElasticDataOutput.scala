@@ -10,6 +10,10 @@ import org.json4s.jackson.JsonMethods._
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Takes in new and update records from a json dump and adds metadata required by ES to perform bulk
+  * insert or update.
+  */
 object ElasticDataOutput {
   val ES_ACTION_UPDATE = "update"
   implicit val formats = DefaultFormats

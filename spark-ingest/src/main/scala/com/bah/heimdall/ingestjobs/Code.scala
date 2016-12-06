@@ -2,6 +2,9 @@ package com.bah.heimdall.ingestjobs
 
 import com.bah.heimdall.ingestjobs.Project.Org
 
+/**
+  * Domain model for Sonar and Dependency data
+  */
 object Code {
   //Project Health
   //Sonar Metric

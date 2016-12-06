@@ -85,16 +85,16 @@ hooks:
 #      runas:
 # During the BeforeInstall deployment lifecycle event, run the commands
 #   in the script specified in "location".
-#  BeforeInstall:
-#    - location: ops/clean_app_files.sh
+  BeforeInstall:
+#    - location: bin/pre-deploy.sh
 #      timeout: 60
 #    - location:
 #      timeout:
 #      runas:
 # During the AfterInstall deployment lifecycle event, run the commands
 #   in the script specified in "location".
-#  AfterInstall:
-#    - location: ops/install_dependencies.sh
+  AfterInstall:
+    - location: bin/cleanup.sh
 #      timeout: 300
 # During the ApplicationStart deployment lifecycle event, run the commands
 #   in the script specified in "location".
