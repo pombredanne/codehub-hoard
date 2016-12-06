@@ -85,7 +85,7 @@ hooks:
 #      runas:
 # During the BeforeInstall deployment lifecycle event, run the commands
 #   in the script specified in "location".
-  BeforeInstall:
+#  BeforeInstall:
 #    - location: bin/pre-deploy.sh
 #      timeout: 60
 #    - location:
