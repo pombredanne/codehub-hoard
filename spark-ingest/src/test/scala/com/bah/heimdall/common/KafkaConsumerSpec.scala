@@ -8,7 +8,7 @@ class KafkaConsumerSpec extends BaseSpec{
     val conf = TestAppConfig.getConf
     val topic = "testtopic"
     val producer = KafkaProducer(conf)
-    producer.sendMessageBlocking(topic, "key1", "value1", conf)
+    producer.sendMessageBlocking(topic, new KafkaMessage("key1", "key1:value1"), conf)
 
     val consumer = KafkaConsumer(conf)
     val message = consumer.getMessages("", conf)

@@ -28,7 +28,9 @@ object HttpUtils {
   }
 
   def getResponse(url: String, continueOnErr: Boolean = true): String = {
-    IngestUtil.getHttpResponseWithHeaders(url, continueOnErr).asScala.toList(0)
+    val str = IngestUtil.getHttpResponseWithHeaders(url, continueOnErr).asScala.toList(0)
+    //println(str)
+    str
   }
 
   def getResponseWithPagedData(url:String, continueOnErr:Boolean): ArrayBuffer[JValue] = {

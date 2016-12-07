@@ -23,5 +23,7 @@ object WordCount {
 
     val linesRdd = sc.textFile(inPath)
     getWC(linesRdd).saveAsTextFile(outPath)
+
+    sc.stop
   }
 }
