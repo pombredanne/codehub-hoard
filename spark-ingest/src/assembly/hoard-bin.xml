@@ -20,7 +20,7 @@
 			<outputDirectory>ingress</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>../${basedir}/sonar_dependencies</directory>
+			<directory>${basedir}/target/sonar_dependencies</directory>
 			<outputDirectory>sonar_dependencies</outputDirectory>
 		</fileSet>
 		<fileSet>

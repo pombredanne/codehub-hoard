@@ -7,7 +7,7 @@ set -e
 # - Make sure JAVA_HOME is set
 
 INSTALL_TOOLS_DIR=${ingest.tools.dir}
-DATA_DIR=${ingest.data.dir}
+DATA_DIR=${ingest.data.home.dir}
 INGEST_HOME=${ingest.home}
 
 ENV=dev

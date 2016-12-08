@@ -14,7 +14,7 @@ import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
 
 /**
-  * Pulls Sonar metrics data (public, enterprise, both) using the SOnarrest api. It filters/enriches
+  * Pulls Sonar metrics data (public, enterprise) using the SOnarrest api. It filters/enriches
   * data that is needed for Stage and creates domain model objects.
   */
 object Sonar extends GithubBase{

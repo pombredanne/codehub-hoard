@@ -18,7 +18,7 @@ import scala.collection.immutable.List
 import scala.collection.mutable.ArrayBuffer
 
 /**
-  * Pulls Github data (public, enterprise, both) using the Github rest api. It filters/enriches
+  * Pulls Github data (public, enterprise) using the Github rest api. It filters/enriches
   * data that is needed for Stage and creates domain model objects.
   */
 object Github extends GithubBase{
@@ -30,10 +30,7 @@ object Github extends GithubBase{
       println("Usage: spark-submit with params <configFile> <outputPath>")
       System.exit(0)
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/feature/new-ingest-pipeline
     val configFile = args(0)
     AppConfig(configFile)
 
@@ -45,7 +42,9 @@ object Github extends GithubBase{
     val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
 
     //local mode
-    val sc = new SparkContext(new SparkConf().setAppName("Ingest Project Data"))
+    val sparkConf = new SparkConf().setAppName("Ingest Project Data")
+    sparkConf.set("spark.eventLog.enabled", "true")
+    val sc = new SparkContext()
     //print configs
     //sc.getConf.toDebugString()
 

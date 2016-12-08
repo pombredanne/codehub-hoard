@@ -243,12 +243,13 @@
                         </goals>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <outputDirectory>${basedir}/target/ingress</outputDirectory>
+                            <outputDirectory>${basedir}/target/sonar_dependencies</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../${basedir}/ingress/</directory>
+                                    <!-- until we make a root maven  -->
+                                    <directory>${basedir}/../sonar_dependencies/</directory>
                                     <includes>
-                                        <include>*.*</include>
+                                        <include>*.sh</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
