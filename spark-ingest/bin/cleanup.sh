@@ -6,6 +6,11 @@ cd $INGEST_HOME
 cd ../
 sudo chown -R ec2-user:ec2-user heimdall
 
+#Restore old config file settings after deploying. This will be removed once we
+#have a mechanism to encrypt the github token in config files
+cp $INGEST_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
+
+#Start creating the data directory structure
 DATA_DIR=${ingest.data.dir}
 
 if [ ! -d $DATA_DIR ]; then
@@ -32,9 +37,11 @@ if [ ! -d $DATA_DIR ]; then
     chmod -R 777 "$INGEST_DATA_DIR"
     chmod -R 777 "$PROCESS_DATA_DIR"
 
+    #Delete indices - dev purposed only
     curl -XDELETE 'http://${elastic.server.url}/projects/'
     curl -XDELETE 'http://${elastic.server.url}/code/'
 
+    #Create Projects Index
     curl -XPUT http://${elastic.server.url}/projects/ -d '{
         "mappings": {
             "project": {

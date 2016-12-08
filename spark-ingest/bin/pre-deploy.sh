@@ -3,6 +3,11 @@
 INGEST_TOOLS=${ingest.tools.dir}
 INGEST_HOME=${ingest.home}
 
+#Save old config file settings before deploying. This will be removed once we
+#have a mechanism to encrypt the github token in config files
+cp $INGEST_HOME/config/application.conf $INGEST_HOME/config/application_orig.conf
+
+
 echo Stopping Nifi ...
 $INGEST_TOOLS/nifi-*/bin/nifi.sh stop
 
