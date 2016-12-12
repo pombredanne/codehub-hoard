@@ -140,6 +140,7 @@ def clone_public_projects(repos,config):
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
         run(["git","clone",repo['clone_url']])
+        kafkaProducer.publish_kafka_message(repo,config)
 
 
 def clone_enterprise_projects(repos,config):
@@ -158,11 +159,12 @@ def clone_enterprise_projects(repos,config):
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
         run(["git","clone",repo['clone_url']])
+        kafkaProducer.publish_kafka_message(repo,config)
 
 def automate_processes(config):
     repos = collect_repositries(config)
-    for repo in repos:
-        kafkaProducer.publish_kafka_message(repo,config)
+    print("completing cloning repos....")
+    print(repos)
 
 if __name__ == "__main__":
     parsed = configparams._parse_commandline()
