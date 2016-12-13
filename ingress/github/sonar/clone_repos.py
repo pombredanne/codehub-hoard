@@ -10,11 +10,9 @@ import shutil,pickle
 import configparams,automate_sonar_dependencies,kafkaProducer
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
 from os.path import expanduser
-from kafka import KafkaConsumer
-from kafka import KafkaProducer
 from pykafka import KafkaClient
 
 def collect_repositries(config):
@@ -139,7 +137,7 @@ def clone_public_projects(repos,config):
         curr_dir = os.getcwd()
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
-        run(["git","clone",repo['clone_url']])
+        call(["git","clone",repo['clone_url']])
         kafkaProducer.publish_kafka_message(repo,config)
 
 
