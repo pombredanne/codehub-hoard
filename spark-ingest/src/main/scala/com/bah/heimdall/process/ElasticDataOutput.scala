@@ -73,7 +73,8 @@ object ElasticDataOutput {
       resultDF.printSchema()
       resultDF.show()
       val outDS = resultDF.toJSON.map(json => addIndexMetaData(json, "index", indexName, docType))
-      outDS.rdd.saveAsTextFile(s"$outputPath/$batchId")
+      if (outDS.count > 0 )
+        outDS.rdd.saveAsTextFile(s"$outputPath/$batchId")
 
     })
 
@@ -94,7 +95,9 @@ object ElasticDataOutput {
     val updateOutDS = updateDF.toJSON.map(json => {
         addIndexMetaData(json, ES_ACTION_UPDATE , indexName, docType)
     })
-    val tempBatchId = new Date().getTime();
-    updateOutDS.rdd.saveAsTextFile(s"$outputPath/$tempBatchId")
+    if (updateOutDS.count > 0 ) {
+      val tempBatchId = new Date().getTime();
+      updateOutDS.rdd.saveAsTextFile(s"$outputPath/$tempBatchId")
+    }
   }
 }

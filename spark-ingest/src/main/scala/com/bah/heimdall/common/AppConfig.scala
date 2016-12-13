@@ -31,6 +31,8 @@ class AppConfig {
       throw new RuntimeException(getMessage(ORGS))
     if(conf.getString(PUB_ACCESS_TOKEN).isEmpty)
       throw new RuntimeException(getMessage(PUB_ACCESS_TOKEN))
+    if(conf.getString(ENT_GITHUB_API_URL).isEmpty)
+      throw new RuntimeException(getMessage(ENT_GITHUB_API_URL))
     if(conf.getString(ENT_ACCESS_TOKEN).isEmpty)
       throw new RuntimeException(getMessage(ENT_ACCESS_TOKEN))
     //Kafka Required properties

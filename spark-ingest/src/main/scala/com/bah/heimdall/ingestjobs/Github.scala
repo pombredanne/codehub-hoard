@@ -41,10 +41,9 @@ object Github extends GithubBase{
     val outPath = args(1) + "/"+ batchId
     val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
 
-    //local mode
     val sparkConf = new SparkConf().setAppName("Ingest Project Data")
     sparkConf.set("spark.eventLog.enabled", "true")
-    val sc = new SparkContext()
+    val sc = new SparkContext(sparkConf)
     //print configs
     //sc.getConf.toDebugString()
 
@@ -101,7 +100,7 @@ object Github extends GithubBase{
     val contributorsJson = getPagedRepoProperties(env, orgLogin, repoName, "contributors")
     val languagesJson = getRepoProperties(env, orgLogin, repoName, "languages")
     val watchers = getPagedRepoProperties(env, orgLogin, repoName, "subscribers")
-    //Get file associated to repo
+    //Get readme file associated to repo
     val readmeRaw = getRepoProperties(env, orgLogin, repoName, "contents/README.md")
     //build
     val (contributors, numCommits) = buildContributors(contributorsJson)
@@ -110,7 +109,7 @@ object Github extends GithubBase{
     //Auto suggest
     val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
 
-      //Build repo structure
+    //Build repo structure
     val orgRepo = OrgRepo(SRC_GITHUB,
       orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
       Org((repoJson \ "owner" \ "login").extract[String],
@@ -152,9 +151,8 @@ object Github extends GithubBase{
             (contributorJson \ "html_url").extract[String],
             (contributorJson \ "avatar_url").extract[String],
             (contributorJson \ "type").extract[String])
-        else Contributor((contributorJson \ "login").extract[String],
-            (contributorJson \ "html_url").extract[String],
-            (contributorJson \ "avatar_url").extract[String],
+        else Contributor((contributorJson \ "name").extract[String],
+            "", "",
             (contributorJson \ "type").extract[String])
       })
       contributors.toList

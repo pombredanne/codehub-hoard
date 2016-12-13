@@ -20,6 +20,7 @@ NIFI_VERSION=nifi-0.7.1
 SPARK_WORKSPACE_DIR=${spark.worker.dir}
 NIFI_WEB_PORT=8088
 #ELASTIC_VERSION=elasticsearch-2.4.0
+KAFKA_ZOOKEEPER_SERVER=${kafka.zookeeper.servers}
 
 #Create required directories
 if [ ! -d $INGEST_HOME ]; then
@@ -99,7 +100,7 @@ sleep 20
 
 echo creating kafka topics...
 
-$INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic INGEST_QUEUE
+$INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-topics.sh --create --zookeeper $KAFKA_ZOOKEEPER_SERVER --replication-factor 1 --partitions 1 --topic INGEST_QUEUE
 #--retention.ms=86400000
 
 
