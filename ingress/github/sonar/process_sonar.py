@@ -10,7 +10,7 @@ import shutil
 import configparams,automate_sonar_dependencies,kafkaProducer,process_es
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess,pickle
 
 def process_cloned_projects_b(repos):

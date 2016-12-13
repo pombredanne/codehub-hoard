@@ -10,7 +10,7 @@ import shutil, pickle
 import configparams,automate_sonar_dependencies,automate_sonar_processing
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
 
 def _process_elasticSearch_update(config,returned_responses):
