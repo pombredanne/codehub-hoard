@@ -33,6 +33,12 @@ object HttpUtils {
     str
   }
 
+  /**
+    * Recursively extracts paged data from github api and returns the full dataset.
+    * @param url
+    * @param continueOnErr
+    * @return
+    */
   def getResponseWithPagedData(url:String, continueOnErr:Boolean): ArrayBuffer[JValue] = {
     var result = ArrayBuffer.empty[JValue]
 

@@ -37,7 +37,7 @@ if [ ! -d $DATA_DIR ]; then
     chmod -R 777 "$INGEST_DATA_DIR"
     chmod -R 777 "$PROCESS_DATA_DIR"
 
-    #Delete indices - dev purposed only
+    #Delete indices - for dev purpose only
     curl -XDELETE 'http://${elastic.server.url}/projects/'
     curl -XDELETE 'http://${elastic.server.url}/code/'
 

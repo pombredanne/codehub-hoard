@@ -13,9 +13,9 @@ $INGEST_TOOLS/nifi-*/bin/nifi.sh stop
 
 sleep 60
 
-gzip $INGEST_HOME/config/StageNfiDataflow.xml
+gzip $INGEST_HOME/config/StageNifiConfiguration.xml
 
-cp $INGEST_HOME/config/StageNfiDataflow.xml $INGEST_HOME/config/flow.xml.gz
+cp $INGEST_HOME/config/StageNifiConfiguration.xml $INGEST_HOME/config/flow.xml.gz
 
 mv $INGEST_HOME/config/flow.xml.gz $INGEST_TOOLS/nifi-*/config/
 

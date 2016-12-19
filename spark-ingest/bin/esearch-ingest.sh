@@ -23,7 +23,7 @@ do
     if [[ -f $file ]]; then
         cat ${dir}part* > ${outdirname}elastic_data.json
 
-        curl -s -XPOST localhost:9200/_bulk --data-binary "@$outdirname/elastic_data.json"
+        curl -s -XPOST ${elastic.server.url}/_bulk --data-binary "@$outdirname/elastic_data.json"
         break
     fi
   done

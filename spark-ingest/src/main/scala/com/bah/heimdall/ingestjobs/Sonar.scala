@@ -37,7 +37,9 @@ object Sonar extends GithubBase{
     val completeTopic = AppConfig.conf.getString(INGEST_COMPLETION_TOPIC)
     val indexName = AppConfig.conf.getString(CODES_INDEX_NAME)
 
-    val sc = new SparkContext(new SparkConf().setAppName("Ingest Code Data"))
+    val sparkConf = new SparkConf().setAppName("Ingest Code Data")
+    sparkConf.set("spark.eventLog.enabled", "true")
+    val sc = new SparkContext(sparkConf)
 
     val runEnv = AppConfig.conf.getString(RUN_ENV)
     println(s"Project run environment is set to $runEnv")

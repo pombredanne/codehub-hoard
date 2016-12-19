@@ -23,14 +23,14 @@ public class IngestUtil {
             return response;
 
         try {
-            //FIXME
-            /** Please note: SSL certificate validation is disabled for now ***/
+
             SSLContextBuilder contextBuilder = SSLContextBuilder.create().useProtocol("TLSv1.2");
-            contextBuilder.loadTrustMaterial(new TrustStrategy(){
-                public boolean isTrusted(java.security.cert.X509Certificate[] var1, String var2) throws java.security.cert.CertificateException{
-                    return true;
-                }
-            });
+            /** Please note: uncommenting this will disable SSL certificate validation. For testing purposes only ***/
+            //contextBuilder.loadTrustMaterial(new TrustStrategy(){
+            //    public boolean isTrusted(java.security.cert.X509Certificate[] var1, String var2) throws java.security.cert.CertificateException{
+            //        return true;
+            //    }
+            //});
 
             SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(contextBuilder.build(), new DefaultHostnameVerifier());
             HttpClientBuilder builder = HttpClients.custom().setSSLSocketFactory(sslFactory);
