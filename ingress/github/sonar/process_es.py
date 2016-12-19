@@ -10,7 +10,7 @@ import shutil, pickle
 import configparams,automate_sonar_dependencies,automate_sonar_processing
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
 
 def _process_elasticSearch_update(config,returned_responses):
@@ -24,7 +24,7 @@ def _process_elasticSearch_update(config,returned_responses):
                 update_query = {
                   "doc": data_json
                 }
-                ret_response = requests.post(configurations['stage_es_url']+'/projects/project/'+returned_responses['_id']+'/_update', data=json.dumps(update_query))
+                ret_response = requests.post(configurations['stage_es_url']+'/code/project/'+returned_responses['_id']+'/_update', data=json.dumps(update_query))
                 print(ret_response)
 
 def automate_processes(config, repos_metrics):

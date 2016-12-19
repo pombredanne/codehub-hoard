@@ -10,7 +10,7 @@ import shutil
 import configparams,automate_sonar_dependencies
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
 
 def collect_repositries(config):

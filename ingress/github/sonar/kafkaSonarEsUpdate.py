@@ -10,7 +10,6 @@ def process_es_update(messages,config):
             processed_sonar_data = pickle.loads(message.value)
             print(processed_sonar_data)
             process_es.automate_processes(config,processed_sonar_data)
-            #print(processed_sonar_data)
         else:
             pass
 
