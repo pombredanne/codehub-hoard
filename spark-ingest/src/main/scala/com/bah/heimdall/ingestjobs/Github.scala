@@ -71,7 +71,7 @@ object Github extends GithubBase{
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
-    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName")
+    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:index")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
 

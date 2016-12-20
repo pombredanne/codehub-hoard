@@ -7,8 +7,10 @@ cd ../
 sudo chown -R ec2-user:ec2-user heimdall
 
 #Restore old config file settings after deploying. This will be removed once we
-#have a mechanism to encrypt the github token in config files
+#have a mechanism to encrypt the github tokens in config files
 cp $INGEST_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
+cp $INGEST_HOME/ingress/github/code/ingest_orig.conf $INGEST_HOME/ingress/github/code/ingest.conf
+cp $INGEST_HOME/ingress/github/sonar/ingest_orig.conf $INGEST_HOME/ingress/github/sonar/ingest.conf
 
 #Start creating the data directory structure
 DATA_DIR=${ingest.data.dir}
@@ -124,7 +126,8 @@ if [ ! -d $DATA_DIR ]; then
         }
     }'
 
-    #TODO add mapping for code index
+    #Create empty index for code
+    curl -XPUT 'http://${elastic.server.url}/code/'
 
     echo "Cleanup complete"
 fi

@@ -43,6 +43,10 @@ if [ ! -d $TEMP ]; then
  mkdir -p $TEMP
 fi
 
+if [ ! -d /tmp/spark-events ]; then
+ mkdir -p /tmp/spark-events
+fi
+
 #Get and install spark in local mode
 echo http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz
 wget -P $TEMP/ http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz

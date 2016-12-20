@@ -21,7 +21,7 @@ object ElasticDataOutput {
   def addIndexMetaData(jsonLine: String, action:String, indexName:String, docType: String): String ={
     val id = (parse(jsonLine) \ "stage_id").extract[String]
     val jsonStr = action match {
-      case ES_ACTION_UPDATE => s"""{"doc":$jsonLine}"""
+      case ES_ACTION_UPDATE => s"""{"doc":$jsonLine, "doc_as_upsert": true}"""
       case _ => jsonLine
     }
     val outJson = s"""{$action:{"_index": \"$indexName\","_type":\"$docType\", "_id":\"$id\"}}\n""" + jsonStr
@@ -60,6 +60,7 @@ object ElasticDataOutput {
     messages.foreach(message => {
       val batchId = message.key
       val indexName = message.value.split(":")(1)
+      val actionType = message.value.split(":")(2)
       println(s"Processing Index Data:$indexName for batchId:$batchId from topic $completeTopic")
       val jsonDF = Try(spark.read.json(s"$inputPath/*/$batchId/part*")) match {
         case Success(jsonDF) => Some(jsonDF)
@@ -72,24 +73,27 @@ object ElasticDataOutput {
       val resultDF = jsonDF.getOrElse(Seq.empty[String].toDF())
       resultDF.printSchema()
       resultDF.show()
-      val outDS = resultDF.toJSON.map(json => addIndexMetaData(json, "index", indexName, docType))
+      val outDS = resultDF.toJSON.map(json => addIndexMetaData(json, actionType , indexName, docType))
       if (outDS.count > 0 )
         outDS.rdd.saveAsTextFile(s"$outputPath/$batchId")
 
     })
 
     //Preparing data to be updated in existing index
-    println("Processing updates for ES bulk update")
-    val indexName = conf.getString(CODES_INDEX_NAME) //this will be sent in kafka message later t
-    val updateJsonDF = Try(spark.read.json(s"$updateInputPath/*.json")) match {
-      case Success(jsonDF) => Some(jsonDF)
-      case Failure(ex) => {
-        println(s"$STAGE_ERROR: Error occurred while processing Updates for Index:$indexName")
-        ex.printStackTrace()
-        None
-      }
-    }
-    val updateDF = updateJsonDF.getOrElse(Seq.empty[String].toDF())
+
+   // println("Processing updates for ES bulk update")
+
+   // val indexName = conf.getString(CODES_INDEX_NAME) //this will be sent in kafka message later t
+   // val updateJsonDF = Try(spark.read.json(s"$updateInputPath/*.json")) match {
+   //   case Success(jsonDF) => Some(jsonDF)
+   //   case Failure(ex) => {
+   //     println(s"$STAGE_ERROR: Error occurred while processing Updates for Index:$indexName")
+   //     ex.printStackTrace()
+   //     None
+    //  }
+    //}
+
+    /*val updateDF = updateJsonDF.getOrElse(Seq.empty[String].toDF())
     updateDF.printSchema()
     updateDF.show()
     val updateOutDS = updateDF.toJSON.map(json => {
@@ -99,5 +103,6 @@ object ElasticDataOutput {
       val tempBatchId = new Date().getTime();
       updateOutDS.rdd.saveAsTextFile(s"$outputPath/$tempBatchId")
     }
+  */
   }
 }
