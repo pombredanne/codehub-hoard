@@ -18,10 +18,6 @@
 		<fileSet>
 			<directory>../${basedir}/ingress</directory>
 			<outputDirectory>ingress</outputDirectory>
-			<includes>
-				<include>*.*</include>
-			</includes>
-			<lineEnding>unix</lineEnding>
 			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
