@@ -19,7 +19,7 @@
 			<directory>../${basedir}/ingress</directory>
 			<outputDirectory>ingress</outputDirectory>
 			<includes>
-				<include>*.py</include>
+				<include>*.*</include>
 			</includes>
 			<lineEnding>unix</lineEnding>
 			<fileMode>0755</fileMode>
