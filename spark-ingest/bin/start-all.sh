@@ -30,10 +30,10 @@ $INGEST_TOOLS/$KAFKA_VERSION/bin/kafka-server-start.sh $INGEST_TOOLS/$KAFKA_VERS
 
 sleep 10
 
-echo Starting Elastic Search ...
-$INGEST_TOOLS/$SEARCH_HOME/bin/elasticsearch &
+#echo Starting Elastic Search ...
+#$INGEST_TOOLS/$SEARCH_HOME/bin/elasticsearch &
 
-sleep 10
+#sleep 10
 #echo Starting Kibana ...
 #$INGEST_TOOLS/$KIBANA_HOME/bin/kibana &
 

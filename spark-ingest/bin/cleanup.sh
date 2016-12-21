@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 
-#AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
+
 INGEST_HOME=${ingest.home}
-cd $INGEST_HOME
-cd ../
-sudo chown -R ec2-user:ec2-user heimdall
 
 #Restore old config file settings after deploying. This will be removed once we
 #have a mechanism to encrypt the github tokens in config files
 cp $INGEST_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
 cp $INGEST_HOME/ingress/github/code/ingest_orig.conf $INGEST_HOME/ingress/github/code/ingest.conf
 cp $INGEST_HOME/ingress/github/sonar/ingest_orig.conf $INGEST_HOME/ingress/github/sonar/ingest.conf
+
+#AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
+cd $INGEST_HOME
+cd ../
+sudo chown -R ec2-user:ec2-user heimdall
+
 
 #Start creating the data directory structure
 DATA_DIR=${ingest.data.dir}
@@ -19,24 +22,24 @@ if [ ! -d $DATA_DIR ]; then
     mkdir -p $DATA_DIR
 
     SEARCH_DATA_DIR="${DATA_DIR}/esearch/"
-    INGEST_DATA_DIR="${DATA_DIR}/ingest/"
+    #INGEST_DATA_DIR="${DATA_DIR}/ingest/"
     PROCESS_DATA_DIR="${DATA_DIR}/process/"
 
     rm -r "$SEARCH_DATA_DIR"
-    rm -r "$INGEST_DATA_DIR"
+    #rm -r "$INGEST_DATA_DIR"
     rm -r "$PROCESS_DATA_DIR"
 
     mkdir -p "$SEARCH_DATA_DIR/input"
-    mkdir -p "$INGEST_DATA_DIR/input"
+    #mkdir -p "$INGEST_DATA_DIR/input"
     mkdir -p "$PROCESS_DATA_DIR/input"
-    mkdir -p "$PROCESS_DATA_DIR/input/updates"
+    #mkdir -p "$PROCESS_DATA_DIR/input/updates"
 
     mkdir -p "$SEARCH_DATA_DIR/output"
-    mkdir -p "$INGEST_DATA_DIR/output"
+    #mkdir -p "$INGEST_DATA_DIR/output"
     mkdir -p "$PROCESS_DATA_DIR/output"
 
     chmod -R 777 "$SEARCH_DATA_DIR"
-    chmod -R 777 "$INGEST_DATA_DIR"
+    #chmod -R 777 "$INGEST_DATA_DIR"
     chmod -R 777 "$PROCESS_DATA_DIR"
 
     #Delete indices - for dev purpose only

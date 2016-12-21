@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 #This script is run before the updated package is deployed to the server. It checks to see
-#if any of the ingest scripts are currently running and waits till they are all done.
+#if any of the ingest scripts are currently running and waits till they are all done. Long running
+#processes are killed.
 
 PROCESS_NAME_ENDING="ingest.sh"
 
