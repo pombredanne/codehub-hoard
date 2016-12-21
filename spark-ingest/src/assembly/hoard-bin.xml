@@ -18,10 +18,20 @@
 		<fileSet>
 			<directory>../${basedir}/ingress</directory>
 			<outputDirectory>ingress</outputDirectory>
+			<includes>
+				<include>*.py</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>${basedir}/target/sonar_dependencies</directory>
 			<outputDirectory>sonar_dependencies</outputDirectory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>${basedir}/target/bin</directory>
