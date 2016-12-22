@@ -59,6 +59,8 @@ cp $INSTALL_SCRIPTS_DIR/spark-env.sh $INSTALL_TOOLS_DIR/$SPARK_VERSION/conf/spar
 echo http://apache.claz.org/kafka/0.10.0.1/${KAFKA_VERSION}.tgz
 wget -P $TEMP/ http://apache.claz.org/kafka/0.10.0.1/${KAFKA_VERSION}.tgz
 tar zxvf $TEMP/$KAFKA_VERSION.tgz -C $INSTALL_TOOLS_DIR/
+#change kafka message retention for 1 day
+sed -i 's/log.retention.hours=168/log.retention.hours=24/' $INSTALL_TOOLS_DIR/$KAFKA_VERSION/config/server.properties
 
 #Get and install Nifi
 echo https://archive.apache.org/dist/nifi/0.7.1/${NIFI_VERSION}-bin.tar.gz
@@ -67,10 +69,6 @@ tar zxvf $TEMP/${NIFI_VERSION}-bin.tar.gz -C $INSTALL_TOOLS_DIR/
 
 #change nifi default port for the webapp from 8080(which conflicts with spark port) to 8088
 sed -i 's/nifi.web.http.port=8080/nifi.web.http.port=8088/' $INSTALL_TOOLS_DIR/$NIFI_VERSION/conf/nifi.properties
-
-#Get and install Elastic
-#wget -P $TEMP/ https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.0/elasticsearch-2.4.0.tar.gz
-#tar zxvf $TEMP/${ELASTIC_VERSION}.tar.gz -C $INSTALL_TOOLS_DIR/
 
 rm -r tmp
 
@@ -99,13 +97,9 @@ sudo -u ec2-user $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $IN
 
 sleep 20
 
-#echo Starting Elastic Search Server ...
-#$INSTALL_TOOLS_DIR/$ELASTIC_VERSION/bin/elasticsearch &
-
 echo creating kafka topics...
 
 $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-topics.sh --create --zookeeper $KAFKA_ZOOKEEPER_SERVER --replication-factor 1 --partitions 1 --topic INGEST_QUEUE
-#--retention.ms=86400000
 
 
 echo setup complete!
