@@ -1,0 +1,57 @@
+<assembly>
+  <id>dist-assembly</id>
+
+	<formats>
+	  <format>tar.gz</format>
+	  <format>zip</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<fileSets>
+		<fileSet>
+		  <directory>${basedir}/target/</directory>
+		  <outputDirectory></outputDirectory>
+		  <includes>
+			<include>spark*.jar</include>
+		  </includes>
+		</fileSet>
+		<!-- copy sonar and dependency files-->
+		<fileSet>
+			<directory>../${basedir}/ingress</directory>
+			<outputDirectory>ingress</outputDirectory>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/target/sonar_dependencies</directory>
+			<outputDirectory>sonar_dependencies</outputDirectory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/target/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/target/config</directory>
+			<outputDirectory>config</outputDirectory>
+			<includes>
+				<include>*.conf</include>
+				<include>*.xml</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>../${basedir}/</directory>
+			<outputDirectory></outputDirectory>
+			<includes>
+				<include>appspec.yml</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+</assembly>

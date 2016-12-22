@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from git import Repo
 import glob2
 import requests
@@ -8,7 +10,7 @@ import shutil
 import configparams,automate_sonar_dependencies
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
 
 def collect_repositries(config):
@@ -116,7 +118,7 @@ def build_sonar_project_config(repos_src,config):
 
 def writeToConfigFile(repo):
     aggregated_src = ''
-    exclusions = '**/system/**, **/test/**, **/img/**, **/logs/**, **/fonts/**, **/generated-sources/**, **/packages/**, **/docs/**, **/node_modules/**, **/bower_components/**,**/dist/**,**/unity.js,**/bootstrap.css, **/*.rb, **/tools/**'
+    exclusions = '**/system/**, **/test/**, **/img/**, **/logs/**, **/fonts/**, **/generated-sources/**, **/packages/**, **/docs/**, **/node_modules/**, **/bower_components/**,**/dist/**,**/unity.js,**/bootstrap.css, **/tools/**'
     for src in repo['src_list']:
         aggregated_src = src + "," + aggregated_src
     file_object = open(repo['root_dir']+"/sonar-project.properties", 'w')
