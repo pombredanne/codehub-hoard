@@ -98,9 +98,9 @@ hooks:
 #      timeout: 300
 # During the ApplicationStart deployment lifecycle event, run the commands
 #   in the script specified in "location".
-#  ApplicationStart:
-#    - location: ops/start_app.sh
-#      timeout: 300
+  ApplicationStart:
+    - location: bin/post-deploy.sh
+      timeout: 300
 # During the ValidateService deployment lifecycle event, run the commands
 #   in the script specified in "location".
 #  ValidateService:
