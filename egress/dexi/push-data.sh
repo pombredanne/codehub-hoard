@@ -6,7 +6,7 @@
 #
 # Parameters: push-data.sh $1 $2 $3
 # -----------------------------------
-# $1 - The environment to execute against {dev, prod}
+# $1 - The environment to execute against {DEV, PROD}
 # $2 - The IP or Host for Elastic Search.  Assumes you're running on default port 9200
 # $3 - The IP or Host for Dexi Service.  Assumes you're running on default port 5009
 #
@@ -20,7 +20,7 @@ DEXI_PATH=/recommendation-service/api/v1/update_doc_sim
 PROD_DATA_FILE=data-from-es-prod.json
 DEV_DATA_FILE=data-from-es-dev.json
 
-if [ "$1" = "prod" ]
+if [ "$1" = "PROD" ]
 then
 
   rm $PROD_DATA_FILE
@@ -37,7 +37,7 @@ then
     exit 1
   fi
 
-elif [ "$1" = "dev" ]
+elif [ "$1" = "DEV" ]
 then
 
   rm $DEV_DATA_FILE
@@ -47,7 +47,7 @@ then
 
   if [ -f "$DEV_DATA_FILE" ]
   then
-    echo "Pushing to $DEXI_URL""_dev..."
+    echo "Pushing to $DEXI_URL..."
     curl -v POST http://"$DEXI_DOMAIN_NAME":"$DEXI_DEV_PORT""$DEXI_PATH" -d @$DEV_DATA_FILE --header "Content-Type: application/json"
   else
     echo "$DEV_DATA_FILE Not Found!"
