@@ -164,7 +164,6 @@ def clone_enterprise_projects(repos,config):
         curr_dir = os.getcwd()
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
-        print(repo['clone_url'])
         call(["git","clone",repo['clone_url']])
         kafkaProducer.publish_kafka_message(repo,config)
 
