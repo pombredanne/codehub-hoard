@@ -7,7 +7,7 @@
 INGEST_TOOLS=${ingest.tools.dir}
 
 echo Stopping Nifi ...
-$INGEST_TOOLS/nifi-*/bin/nifi.sh stop
+sudo -u ec2-user $INGEST_TOOLS/nifi-*/bin/nifi.sh stop
 
 sleep 60
 
@@ -47,7 +47,7 @@ fi
 
 pid_son=`ps -ef | grep .*[p]rocess_sonar_messages.py.* | awk '{ printf $2 }'`
 if [ ! -z "${pid_son}" ]; then
-    echo "Shutting down Process_sonar_messages.py process.."
+    echo "Shutting down process_sonar_messages.py process.."
     kill ${pid_son}
 fi
 
