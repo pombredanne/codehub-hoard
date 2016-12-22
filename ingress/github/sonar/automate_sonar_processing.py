@@ -5,13 +5,15 @@ import glob2
 import requests
 import json
 import xmltodict
-import os
 import shutil
-import configparams,automate_sonar_dependencies
+import automate_sonar_dependencies
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
+import configparams
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')

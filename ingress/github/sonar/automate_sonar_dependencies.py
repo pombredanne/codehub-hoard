@@ -2,12 +2,14 @@
 
 import requests
 import json
-import os
-import configparams
 import time
 import logging
-from subprocess import call,check_output, run
+from subprocess import call,check_output
 import subprocess
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
+import configparams
+
 
 def install_sonar_server_dependencies(config):
     configurations = config['config']
@@ -17,19 +19,18 @@ def install_sonar_server_dependencies(config):
 def install_sonar_server(config):
     configurations = config['config']
     curr_dir = os.getcwd()
-    run(["ls","-l"])
     if not os.path.exists("sonar_server_dir"):
         os.makedirs("sonar_server_dir")
     os.chdir("sonar_server_dir")
-    run(["ls","-l"])
+    call(["ls","-l"])
     if not os.path.exists("sonarqube-6.0.zip"):
-        run(["wget",configurations['sonar_server_download'],"--no-check-certificate"],check=True)
+        call(["wget",configurations['sonar_server_download'],"--no-check-certificate"],check=True)
     elif not os.path.exists("sonarqube-6.0"):
-        run(["unzip", "sonarqube-6.0.zip"],check=True)
+        call(["unzip", "sonarqube-6.0.zip"],check=True)
     if os.path.exists("sonarqube-6.0"):
         server_dir_linux = "sonarqube-6.0/bin/linux-x86-64/sonar.sh"
         server_dir_macos = "sonarqube-6.0/bin/macosx-universal-64/sonar.sh"
-        run([server_dir_linux,"start"],check=True)
+        call([server_dir_linux,"start"],check=True)
     os.chdir("..")
 
 def install_sonar_runner_dependencies(config):
@@ -45,9 +46,9 @@ def install_sonar_runner(config):
         os.makedirs("sonar_runner_dir")
     os.chdir("sonar_runner_dir")
     if not os.path.exists("sonar-runner-dist-2.4.zip"):
-        run(["wget", configurations['sonar_runner_url'],"--no-check-certificate"],check=True)
+        call(["wget", configurations['sonar_runner_url'],"--no-check-certificate"],check=True)
     elif not os.path.exists("sonar-runner-2.4"):
-        run(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
+        call(["unzip", "sonar-runner-dist-2.4.zip"],check=True)
     runner_dir = os.getcwd()+'/sonar-runner-2.4/bin/sonar-runner'
     return runner_dir
 

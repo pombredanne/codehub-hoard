@@ -8,9 +8,7 @@ def process_messages(messages,config,topic):
     for message in messages:
         if message is not None:
             data = pickle.loads(message.value)
-            print(data)
             processed_sonar_data = process_sonar.automate_processes(config,data)
-            print("I am prinitng process_sonar_data")
             print(processed_sonar_data)
             kafkaProducer.publish_kafka_message(processed_sonar_data, config, topic)
         else:
