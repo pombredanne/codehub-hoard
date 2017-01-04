@@ -3,14 +3,13 @@
 set -e
 
 #Prerequisites:
-# - Setup passwordless ssh to localhost foe user ec2-user
+# - Setup passwordless ssh to localhost for user ec2-user
 # - Make sure JAVA_HOME is set
 
 INSTALL_TOOLS_DIR=${ingest.tools.dir}
 DATA_DIR=${ingest.data.home.dir}
 INGEST_HOME=${ingest.home}
 
-ENV=dev
 INSTALL_SCRIPTS_DIR=.
 TEMP=tmp
 
@@ -18,7 +17,7 @@ SPARK_VERSION=spark-2.0.1-bin-hadoop2.7
 KAFKA_VERSION=kafka_2.10-0.10.0.1
 NIFI_VERSION=nifi-0.7.1
 SPARK_WORKSPACE_DIR=${spark.worker.dir}
-NIFI_WEB_PORT=8088
+NIFI_WEB_PORT=${nifi.webapp.port}
 KAFKA_ZOOKEEPER_SERVER=${kafka.zookeeper.servers}
 
 #Create required directories
@@ -67,8 +66,7 @@ wget -P $TEMP/ https://archive.apache.org/dist/nifi/0.7.1/${NIFI_VERSION}-bin.ta
 tar zxvf $TEMP/${NIFI_VERSION}-bin.tar.gz -C $INSTALL_TOOLS_DIR/
 
 #change nifi default port for the webapp from 8080(which conflicts with spark port) to 8088
-sed -i 's/nifi.web.http.port=8080/nifi.web.http.port=8088/' $INSTALL_TOOLS_DIR/$NIFI_VERSION/conf/nifi.properties
-
+sed -i 's/nifi.web.http.port=8080/nifi.web.http.port='$NIFI_WEB_PORT'/' $INSTALL_TOOLS_DIR/$NIFI_VERSION/conf/nifi.properties
 rm -r tmp
 
 #Change user and ownership of the hoard directories to ec2-user. Everything will be run by this user
@@ -92,12 +90,5 @@ sleep 10
 
 echo Starting Kafka Server ...
 sudo -u ec2-user $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
-
-sleep 20
-
-echo creating kafka topics...
-
-$INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-topics.sh --create --zookeeper $KAFKA_ZOOKEEPER_SERVER --replication-factor 1 --partitions 1 --topic INGEST_QUEUE
-
 
 echo setup complete!

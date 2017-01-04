@@ -265,10 +265,10 @@
                         </goals>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <outputDirectory>${basedir}/target/install</outputDirectory>
+                            <outputDirectory>${basedir}/target/ops</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/install/</directory>
+                                    <directory>${basedir}/ops/</directory>
                                     <includes>
                                         <include>*.sh</include>
                                     </includes>

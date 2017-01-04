@@ -47,6 +47,15 @@
 			</includes>
 		</fileSet>
 		<fileSet>
+			<directory>${basedir}/target/ops</directory>
+			<outputDirectory>ops</outputDirectory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+			<lineEnding>unix</lineEnding>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
 			<directory>${basedir}/</directory>
 			<outputDirectory></outputDirectory>
 			<includes>

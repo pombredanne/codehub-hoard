@@ -28,8 +28,8 @@ object HttpUtils {
   }
 
   def getResponse(url: String, continueOnErr: Boolean = true): String = {
+    println(s"Fetching data from url: $url")
     val str = IngestUtil.getHttpResponseWithHeaders(url, continueOnErr).asScala.toList(0)
-    //println(str)
     str
   }
 
