@@ -24,6 +24,8 @@ object AppConstants {
 
   //Elastic search
   val ES_ID_SEPARATOR = "_"
+  val ES_ACTION_UPSERT = "upsert"
+  val ES_ACTION_UPDATE = "update"
 
 
   //Stage Constants

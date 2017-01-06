@@ -71,7 +71,7 @@ object Github extends GithubBase{
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
-    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:index")
+    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:$ES_ACTION_UPSERT")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
 
@@ -100,21 +100,23 @@ object Github extends GithubBase{
     val contributorsJson = getPagedRepoProperties(env, orgLogin, repoName, "contributors")
     val languagesJson = getRepoProperties(env, orgLogin, repoName, "languages")
     val watchers = getPagedRepoProperties(env, orgLogin, repoName, "subscribers")
+    val forksJson = getPagedRepoProperties(env, orgLogin, repoName, "forks")
     //Get readme file associated to repo
     val readmeRaw = getRepoProperties(env, orgLogin, repoName, "contents/README.md")
     //build
     val (contributors, numCommits) = buildContributors(contributorsJson)
     val numWatchers = buildWatchers(watchers)
     val languages = buildLanguageMap(languagesJson)
+    val forks = buildForks(forksJson)
     //Auto suggest
     val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
 
     //Build repo structure
     val orgRepo = OrgRepo(orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
       Org((repoJson \ "owner" \ "login").extract[String],
-          (repoJson \ "owner" \ "html_url").extract[String],
-          (repoJson \ "owner" \ "avatar_url").extract[String],
-          (repoJson \ "owner" \ "type").extract[String]),
+        (repoJson \ "owner" \ "html_url").extract[String],
+        (repoJson \ "owner" \ "avatar_url").extract[String],
+        (repoJson \ "owner" \ "type").extract[String]),
       env,
       repoName,
       (repoJson \ "html_url").extract[String],
@@ -123,7 +125,7 @@ object Github extends GithubBase{
       repoDesc,
       (repoJson \ "language").extract[String],
       (repoJson \ "stargazers_count").extract[Int],
-      (repoJson \ "forks").extract[Int],
+      forks,
       0,//num of releases
       (repoJson \ "updated_at").extract[String],
       (repoJson \ "created_at").extract[String],
@@ -147,13 +149,13 @@ object Github extends GithubBase{
         val cType = (contributorJson \ "type").extract[String]
         numCommits += (contributorJson \ "contributions").extract[Int]
         if (cType == "User")
-            Contributor((contributorJson \ "login").extract[String],
+          Contributor((contributorJson \ "login").extract[String],
             (contributorJson \ "html_url").extract[String],
             (contributorJson \ "avatar_url").extract[String],
             (contributorJson \ "type").extract[String])
         else Contributor((contributorJson \ "name").extract[String],
-            "", "",
-            (contributorJson \ "type").extract[String])
+          "", "",
+          (contributorJson \ "type").extract[String])
       })
       contributors.toList
     }
@@ -162,6 +164,17 @@ object Github extends GithubBase{
       (getContributors(contributorsJson), numCommits)
     else
       (List(),0)
+  }
+
+  def buildForks(forksJson: ArrayBuffer[JValue]): Forks = {
+    val forkRepos = forksJson.map(forkJson => {
+      val id = (forkJson \ "owner" \ "id").extract[String] + ES_ID_SEPARATOR + (forkJson \ "id").extract[String]
+      val forkRepo = ForkRepo(id,
+        (forkJson \ "name").extract[String],
+        (forkJson \ "owner" \ "login").extract[String])
+      forkRepo
+    })
+    Forks(forkRepos.toList, List())
   }
 
   def buildReadme(readmeRaw: String): ReadMe = {

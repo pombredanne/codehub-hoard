@@ -45,7 +45,7 @@ if [ ! -d /tmp/spark-events ]; then
  mkdir -p /tmp/spark-events
 fi
 
-#Get and install spark in local mode
+#Get and install spark in standalone deploy mode for now
 echo http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz
 wget -P $TEMP/ http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz
 tar zxvf $TEMP/$SPARK_VERSION.tgz -C $INSTALL_TOOLS_DIR/
