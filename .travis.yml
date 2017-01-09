@@ -6,9 +6,8 @@ env:
   - HEIMDALL_VERSION_NUMBER=1.0.0
   - HEIMDALL_BUILD_LABEL=$HEIMDALL_VERSION_NUMBER.$TRAVIS_BUILD_NUMBER-pre-alpha-$TRAVIS_BRANCH
   - HEIMDALL_BRANCH=development
-  - HEIMDALL_PACKAGE_NAME=spark-ingest-1.0-SNAPSHOT-dist-assembly.zip
+  - HEIMDALL_PACKAGE_NAME=hoard-ingest-1.0-SNAPSHOT-dist-assembly.zip
 script:
-  - cd spark-ingest
   - mvn clean package -DskipTests
 before_deploy:
   - mkdir -p dpl_cd_upload
