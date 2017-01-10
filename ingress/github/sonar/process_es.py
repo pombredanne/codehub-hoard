@@ -5,13 +5,15 @@ import glob2
 import requests
 import json
 import xmltodict
-import os
 import shutil, pickle
-import configparams,automate_sonar_dependencies,automate_sonar_processing
+import automate_sonar_dependencies,automate_sonar_processing
 import time
 import logging
 from subprocess import call,check_output
 import subprocess
+import os, sys
+sys.path.append(os.path.abspath("../config"))
+import configparams
 
 def _process_elasticSearch_update(config,returned_responses):
     logging.info(time.strftime("%c")+' talking to ES and adding project metrics attribute with processed data')

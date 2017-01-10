@@ -5,14 +5,15 @@ import glob2
 import requests
 import json,decimal
 import xmltodict
-import os
 import shutil
-import configparams,automate_sonar_dependencies,kafkaProducer,process_es
+import automate_sonar_dependencies,kafkaProducer,process_es
 import time
 import logging
 from subprocess import call,check_output
 import subprocess,pickle
-
+import os, sys
+sys.path.append(os.path.abspath("../config"))
+import configparams
 
 def process_cloned_projects(repo):
     logging.info(time.strftime("%c")+' collecting pom files recursively')
