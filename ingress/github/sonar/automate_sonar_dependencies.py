@@ -2,12 +2,14 @@
 
 import requests
 import json
-import os
-import configparams
 import time
 import logging
 from subprocess import call,check_output
 import subprocess
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
+import configparams
+
 
 def install_sonar_server_dependencies(config):
     configurations = config['config']

@@ -5,15 +5,18 @@ import glob2
 import requests
 import json
 import xmltodict
-import os
 import shutil,pickle
-import configparams,automate_sonar_dependencies,kafkaProducer
+import automate_sonar_dependencies,kafkaProducer
 import time
 import logging
 from subprocess import call,check_output
 import subprocess
 from os.path import expanduser
 from pykafka import KafkaClient
+import os, sys
+sys.path.append(os.path.abspath("../config"))
+import configparams
+
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
@@ -84,7 +87,8 @@ def customize_ent_repo_attributes_mapping(orgs_reponsitories):
         clone_dir = env_home + '/cloned_projects/'+org_repo['owner']['login']+'/'+org_repo['name']
         projects_name_git_url = {}
         git_url = org_repo['clone_url']
-        adjusted_url = git_url.replace('https://','https://natesol-code21:'+configurations['enterprise_github_access_token']+'@')
+        adjusted_url = git_url.replace('https://','https://heimdallcicduser:'+configurations['enterprise_github_access_token']+'@')
+        projects_name_git_url['_id'] = str(org_repo['owner']['id'])+'_'+str(org_repo['id'])
         projects_name_git_url['project_name'] = org_repo['name']
         projects_name_git_url['clone_url'] = adjusted_url
         projects_name_git_url['language'] = org_repo['language']
@@ -102,7 +106,6 @@ def customize_repo_attributes_mapping(orgs_reponsitories):
         clone_dir = env_home + '/cloned_projects/'+org_repo['owner']['login']+'/'+org_repo['name']
         projects_name_git_url = {}
         git_url = org_repo['clone_url']
-        #adjusted_url = git_url.replace('https://','https://natesol-code21:'+configurations['public_github_access_token']+'@')
         adjusted_url = git_url.replace('https://','https://heimdallcicduser:'+configurations['public_github_access_token']+'@')
         print("adjusted_url........")
         print(adjusted_url)
@@ -162,7 +165,6 @@ def clone_enterprise_projects(repos,config):
         curr_dir = os.getcwd()
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
-        print(repo['clone_url'])
         call(["git","clone",repo['clone_url']])
         kafkaProducer.publish_kafka_message(repo,config)
 

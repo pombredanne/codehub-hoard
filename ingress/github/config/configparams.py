@@ -2,18 +2,19 @@
 
 import argparse
 import json
-import logging
+import os, logging
 from re import sub
 
+
 def _read_config(args):
-    config_filename = 'ingest.conf'
+    config_filename = os.path.abspath('../config/ingest.conf')
     config = {}
 
     if args.config is not None:
         config_filename = args.config
 
     logging.info('Reading configuration file (' + config_filename + ') ...')
-
+    print("Reading configuration file "+config_filename)
     with open(config_filename, 'r') as config_file:
         for line in config_file.read().splitlines():
             if not line.startswith('#'):

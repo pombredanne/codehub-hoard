@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-import configparams,os, signal
 from pykafka import KafkaClient
 import pickle, process_es_dependency_update, kafkaConsumer,kafkaConsumer_update
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
+import configparams
+
 
 def process_es_update(messages,config):
     for message in messages:
