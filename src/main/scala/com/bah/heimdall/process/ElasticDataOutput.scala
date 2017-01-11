@@ -11,20 +11,22 @@ import org.json4s.jackson.JsonMethods._
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Takes in new and update records from a json dump and adds metadata required by ES to perform bulk
+  * Takes in new, update and upsert records from a json dump and adds metadata required by ES to perform bulk
   * insert or update.
   */
 object ElasticDataOutput {
-  val ES_ACTION_UPDATE = "update"
   implicit val formats = DefaultFormats
 
   def addIndexMetaData(jsonLine: String, action:String, indexName:String, docType: String): String ={
     val id = (parse(jsonLine) \ "stage_id").extract[String]
+    //Prepare data to index as doc, add any attribute to doc
     val jsonStr = action match {
-      case ES_ACTION_UPDATE => s"""{"doc":$jsonLine, "doc_as_upsert": true}"""
+      case ES_ACTION_UPSERT => s"""{"doc":$jsonLine, "doc_as_upsert": true}"""
       case _ => jsonLine
     }
-    val outJson = s"""{$action:{"_index": \"$indexName\","_type":\"$docType\", "_id":\"$id\"}}\n""" + jsonStr
+    //Prepare metadata for bulk Ingest
+    val es_action = if (action.equalsIgnoreCase(ES_ACTION_UPSERT)) ES_ACTION_UPDATE else action
+    val outJson = s"""{$es_action:{"_index": \"$indexName\","_type":\"$docType\", "_id":\"$id\"}}\n""" + jsonStr
     outJson
   }
 

@@ -4,7 +4,6 @@ package com.bah.heimdall.ingestjobs
   * Domain model for the Github data
   */
 object Project {
-  case class Org(organization:String, organization_url:String, org_avatar_url:String, org_type:String)
   case class OrgRepo(stage_id:String,
                      organization:Org,
                      origin:String,
@@ -15,7 +14,7 @@ object Project {
                      project_description:String,
                      language:String,
                      stars:Int,
-                     forks:Int,
+                     forks:Forks,
                      releases:Int,
                      updated_at:String,
                      created_at:String,
@@ -27,7 +26,10 @@ object Project {
                      commits: Int,
                      rank:Int,
                      suggest:List[SuggestField])
+  case class Org(organization:String, organization_url:String, org_avatar_url:String, org_type:String)
   case class Contributor(username:String, profile_url:String, avatar_url:String, user_type:String)
   case class ReadMe(content:String, url:String)
   case class SuggestField(input:List[String], output:String)
+  case class Forks(forkedRepos:List[ForkRepo],userForkedRepos:List[ForkRepo])
+  case class ForkRepo(id:String, name:String, org_name:String)
 }

@@ -66,7 +66,7 @@ object Sonar extends GithubBase{
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
-    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:update")
+    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:$ES_ACTION_UPSERT")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
 
