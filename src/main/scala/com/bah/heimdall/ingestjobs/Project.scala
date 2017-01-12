@@ -30,6 +30,6 @@ object Project {
   case class Contributor(username:String, profile_url:String, avatar_url:String, user_type:String)
   case class ReadMe(content:String, url:String)
   case class SuggestField(input:List[String], output:String)
-  case class Forks(forkedRepos:List[ForkRepo],userForkedRepos:List[ForkRepo])
+  case class Forks(forkedRepos:List[ForkRepo])
   case class ForkRepo(id:String, name:String, org_name:String)
 }

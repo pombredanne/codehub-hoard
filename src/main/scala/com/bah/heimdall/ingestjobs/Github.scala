@@ -174,7 +174,7 @@ object Github extends GithubBase{
         (forkJson \ "owner" \ "login").extract[String])
       forkRepo
     })
-    Forks(forkRepos.toList, List())
+    Forks(forkRepos.toList)
   }
 
   def buildReadme(readmeRaw: String): ReadMe = {
