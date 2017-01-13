@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-
-import configparams,os, signal
 from pykafka import KafkaClient
 import pickle, process_dependency, kafkaConsumer, kafkaProducer
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
+import configparams
 
 def process_messages(messages,config,topic):
     for message in messages:

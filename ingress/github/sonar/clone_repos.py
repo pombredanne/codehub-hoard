@@ -5,15 +5,18 @@ import glob2
 import requests
 import json
 import xmltodict
-import os
 import shutil,pickle
-import configparams,automate_sonar_dependencies,kafkaProducer
+import automate_sonar_dependencies,kafkaProducer
 import time
 import logging
 from subprocess import call,check_output
 import subprocess
 from os.path import expanduser
 from pykafka import KafkaClient
+import os, sys
+sys.path.append(os.path.abspath("../config"))
+import configparams
+ssl_verify='/etc/ssl/certs/ca-bundle.trust.crt'
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')
@@ -47,7 +50,7 @@ def get_public_repos(config):
     orgs_public_repositories = []
     orgs = configurations['public_orgs']
     for org in orgs:
-        res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=False)
+        res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=ssl_verify)
         orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
     return orgs_public_repositories
 
@@ -56,10 +59,10 @@ def get_org_enterprise_repos(config):
     orgs_enterprise_reponsitories = []
     repos_url_list = []
     access_token = configurations['enterprise_github_access_token']
-    res = requests.get(configurations['enterprise_github_api_url']+"/organizations?access_token="+access_token+'&since=0&per_page=1000',verify=False)
+    res = requests.get(configurations['enterprise_github_api_url']+"/organizations?access_token="+access_token+'&since=0&per_page=1000',verify=ssl_verify)
     res_list = json.loads(res.text)
     for repo_url in res_list:
-        ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=False)
+        ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=ssl_verify)
         orgs_enterprise_reponsitories = orgs_enterprise_reponsitories +  json.loads(ret_list.text)
     return orgs_enterprise_reponsitories
 
@@ -68,10 +71,10 @@ def get_users_enterprise_repos(config):
     users_enterprise_reponsitories = []
     repos_url_list = []
     access_token = configurations['enterprise_github_access_token']
-    res = requests.get(configurations['enterprise_github_api_url']+"/users?access_token="+access_token+'&since=0&per_page=1000',verify=False)
+    res = requests.get(configurations['enterprise_github_api_url']+"/users?access_token="+access_token+'&since=0&per_page=1000',verify=ssl_verify)
     res_list = json.loads(res.text)
     for repo_url in res_list:
-        ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=False)
+        ret_list = requests.get(repo_url['repos_url']+"?access_token="+access_token,verify=ssl_verify)
         users_enterprise_reponsitories = users_enterprise_reponsitories +  json.loads(ret_list.text)
     return users_enterprise_reponsitories
 
@@ -84,7 +87,8 @@ def customize_ent_repo_attributes_mapping(orgs_reponsitories):
         clone_dir = env_home + '/cloned_projects/'+org_repo['owner']['login']+'/'+org_repo['name']
         projects_name_git_url = {}
         git_url = org_repo['clone_url']
-        adjusted_url = git_url.replace('https://','https://natesol-code21:'+configurations['enterprise_github_access_token']+'@')
+        adjusted_url = git_url.replace('https://','https://heimdallcicduser:'+configurations['enterprise_github_access_token']+'@')
+        projects_name_git_url['_id'] = str(org_repo['owner']['id'])+'_'+str(org_repo['id'])
         projects_name_git_url['project_name'] = org_repo['name']
         projects_name_git_url['clone_url'] = adjusted_url
         projects_name_git_url['language'] = org_repo['language']
@@ -102,7 +106,6 @@ def customize_repo_attributes_mapping(orgs_reponsitories):
         clone_dir = env_home + '/cloned_projects/'+org_repo['owner']['login']+'/'+org_repo['name']
         projects_name_git_url = {}
         git_url = org_repo['clone_url']
-        #adjusted_url = git_url.replace('https://','https://natesol-code21:'+configurations['public_github_access_token']+'@')
         adjusted_url = git_url.replace('https://','https://heimdallcicduser:'+configurations['public_github_access_token']+'@')
         print("adjusted_url........")
         print(adjusted_url)
@@ -162,7 +165,6 @@ def clone_enterprise_projects(repos,config):
         curr_dir = os.getcwd()
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
-        print(repo['clone_url'])
         call(["git","clone",repo['clone_url']])
         kafkaProducer.publish_kafka_message(repo,config)
 

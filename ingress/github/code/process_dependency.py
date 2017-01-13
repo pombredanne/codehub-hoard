@@ -2,7 +2,6 @@
 
 import json
 import logging
-import os
 import shutil
 import time
 
@@ -10,7 +9,8 @@ import glob2
 import requests
 import xmltodict
 from git import Repo
-
+import os, sys,signal
+sys.path.append(os.path.abspath("../config"))
 import configparams
 
 def process_java_projects(repo,config):

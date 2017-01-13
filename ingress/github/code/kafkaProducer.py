@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import configparams
 from pykafka import KafkaClient
 import json,pickle
 
