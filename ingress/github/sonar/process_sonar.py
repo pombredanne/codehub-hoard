@@ -33,9 +33,9 @@ def process_cloned_projects(repo):
     return repo_map
 
 def build_sonar_project_config(repos_src,config):
-    runner_dir = install_sonar_runner_dependencies(config)
+    configurations = config['config']
     writeToConfigFile(repos_src)
-    run_sonar_script(repos_src['root_dir'],runner_dir)
+    run_sonar_script(repos_src['root_dir'],configurations['sonar_runner_path'])
 
 
 def writeToConfigFile(repo):
@@ -63,13 +63,6 @@ def run_sonar_script(repo_dir,runner_dir):
     call(["ls","-l"])
     call(runner_dir,shell=True)
     os.chdir(curr_dir)
-
-def install_sonar_runner_dependencies(config):
-    configurations = config['config']
-    runner_dir=''
-    if(configurations['install_sonar_runner']):
-        runner_dir=configurations['sonar_script_path']
-    return runner_dir
 
 def make_sonar_api_call(processed_repos,config):
     processed_repos['metrics'] = process_sonar_api_call(processed_repos,config)
