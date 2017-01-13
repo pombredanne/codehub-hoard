@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+#set -e
 
 #This script is run before the updated package is deployed to the server. It checks to see
 #if any of the ingest scripts are currently running and waits till they are all done. Long running
