@@ -2,24 +2,24 @@
 
 
 INGEST_HOME=${ingest.home}
+DATA_HOME_DIR=${ingest.data.home.dir}
+DATA_DIR=${ingest.data.dir}
 
 #Restore old config file settings after deploying. This will be removed once we
 #have a mechanism to encrypt the github tokens in config files
-cp $INGEST_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
-cp $INGEST_HOME/ingress/github/code/ingest_orig.conf $INGEST_HOME/ingress/github/code/ingest.conf
-cp $INGEST_HOME/ingress/github/sonar/ingest_orig.conf $INGEST_HOME/ingress/github/sonar/ingest.conf
+cp $DATA_DIR/application_orig.conf $INGEST_HOME/config/application.conf
+cp $DATA_DIR/ingest_orig.conf $INGEST_HOME/ingress/github/config/ingest.conf
 
 #AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
 cd $INGEST_HOME
 cd ../
 sudo chown -R ec2-user:ec2-user heimdall
 
-
 #Start creating the data directory structure
-DATA_DIR=${ingest.data.dir}
-
 if [ ! -d $DATA_DIR ]; then
     mkdir -p $DATA_DIR
+    mkdir -p $DATA_HOME_DIR/config
+    mkdir -p $DATA_HOME_DIR/logs
 
     SEARCH_DATA_DIR="${DATA_DIR}/esearch/"
     PROCESS_DATA_DIR="${DATA_DIR}/process/"
