@@ -10,8 +10,8 @@ curl -XPUT ${ES_SERVER_URL}/_snapshot/es_s3_repository -d '
                 "bucket": "test-heimdall-bucket",
                 "base_path": "/stage-es-backup",
                 "region": "us-east-1",
-                "access_key": "AKIAIWC3CXAPVWS3L2WA",
-                "secret_key": "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",
+                "access_key": "",
+                "secret_key": "",
                 "max_retries": "2"
               }
 }';
