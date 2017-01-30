@@ -226,7 +226,7 @@ object Github extends GithubBase{
     autoSuggestFields += SuggestField(List(repoName), repoNameClean + "# name")
     autoSuggestFields += SuggestField(repoDescCleanList, repoNameClean + "# desc")
     autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean + "# languages")
-    autoSuggestFields += SuggestField(contribNames, repoNameClean + "# project contributors")
+    autoSuggestFields += SuggestField(contribNames, repoNameClean + "# contributors")
     autoSuggestFields.toList
   }
 
