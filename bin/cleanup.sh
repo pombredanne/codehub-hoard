@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
 
 
-INGEST_HOME=${ingest.home}
+INGEST_HOME=/opt/heimdall
+DATA_HOME=/var/heimdall
 
 #Restore old config file settings after deploying. This will be removed once we
 #have a mechanism to encrypt the github tokens in config files
-cp $INGEST_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
-cp $INGEST_HOME/ingress/github/code/ingest_orig.conf $INGEST_HOME/ingress/github/code/ingest.conf
-cp $INGEST_HOME/ingress/github/sonar/ingest_orig.conf $INGEST_HOME/ingress/github/sonar/ingest.conf
+if [[ -f $DATA_HOME/config/application_orig.conf ]]; then
+    cp $DATA_HOME/config/application_orig.conf $INGEST_HOME/config/application.conf
+fi
+if [[ -f $DATA_HOME/config/ingest_orig.conf ]]; then
+    cp $DATA_HOME/config/ingest_orig.conf $INGEST_HOME/ingress/github/config/ingest.conf
+fi
 
 #AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
 cd $INGEST_HOME
 cd ../
 sudo chown -R ec2-user:ec2-user heimdall
 
-
 #Start creating the data directory structure
-DATA_DIR=${ingest.data.dir}
-
+DATA_DIR=$DATA_HOME/data
 if [ ! -d $DATA_DIR ]; then
     mkdir -p $DATA_DIR
 

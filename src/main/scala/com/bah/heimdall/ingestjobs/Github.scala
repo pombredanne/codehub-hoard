@@ -109,7 +109,7 @@ object Github extends GithubBase{
     val languages = buildLanguageMap(languagesJson)
     val forks = buildForks(forksJson)
     //Auto suggest
-    val autoSuggest = buildAutoSuggest(repoName,"","",languages,contributors)
+    val autoSuggest = buildAutoSuggest(repoName,repoDesc,"",languages,contributors)
 
     //Build repo structure
     val orgRepo = OrgRepo(orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
@@ -219,17 +219,21 @@ object Github extends GithubBase{
       contrib.username
     })
     val repoNameClean = replacePunctuation(repoName)
-    val repoDescClean = replacePunctuation(repoDesc)
+    val repoDescCleanList = replacePunctuation(repoDesc).split(" ").toList
 
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
-    autoSuggestFields += SuggestField(List(repoNameClean,repoDescClean),repoNameClean)
-    autoSuggestFields += SuggestField(List(repoName), repoNameClean)
-    autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean)
-    autoSuggestFields += SuggestField(contribNames, repoNameClean)
+    autoSuggestFields += SuggestField(List(repoNameClean),repoNameClean + "# name")
+    autoSuggestFields += SuggestField(List(repoName), repoNameClean + "# name")
+    autoSuggestFields += SuggestField(repoDescCleanList, repoNameClean + "# desc")
+    autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean + "# languages")
+    autoSuggestFields += SuggestField(contribNames, repoNameClean + "# project contributors")
     autoSuggestFields.toList
   }
 
   def replacePunctuation(value:String):String = {
-    value.replaceAll("[^-_a-zA-Z0-9\\s]", "")
+    if (value == null)
+      ""
+    else
+      value.replaceAll("[^-_a-zA-Z0-9\\s]", "")
   }
 }
