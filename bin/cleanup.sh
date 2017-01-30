@@ -7,8 +7,8 @@ DATA_DIR=${ingest.data.dir}
 
 #Restore old config file settings after deploying. This will be removed once we
 #have a mechanism to encrypt the github tokens in config files
-cp $DATA_DIR/application_orig.conf $INGEST_HOME/config/application.conf
-cp $DATA_DIR/ingest_orig.conf $INGEST_HOME/ingress/github/config/ingest.conf
+cp $DATA_DIR/config/application.conf $INGEST_HOME/config/application.conf
+cp $DATA_DIR/config/ingest.conf $INGEST_HOME/ingress/github/config/ingest.conf
 
 #AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
 cd $INGEST_HOME
@@ -83,7 +83,7 @@ if [ ! -d $DATA_DIR ]; then
                         "type": "custom",
                         "tokenizer": "standard",
                         "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy"]
+                        "filter": ["lowercase","my_synonym_filter","edgy_titles"]
                     },
                     "grimdall_analyzer": {
                         "type": "custom",
@@ -95,15 +95,20 @@ if [ ! -d $DATA_DIR ]; then
                         "type": "custom",
                         "tokenizer": "standard",
                         "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy"]
+                        "filter": ["lowercase","my_synonym_filter","edgy_lang"]
                     }
                 },
                 "filter": {
-                    "edgy": {
+                    "edgy_title": {
                         "type": "edge_ngram",
-                        "min_gram": "2",
+                        "min_gram": "4",
                         "max_gram": "10"
                     },
+                    "edgy_lang": {
+                         "type": "edge_ngram",
+                         "min_gram": "2",
+                         "max_gram": "10"
+                     },
                     "my_synonym_filter": {
                         "type": "synonym",
                         "synonyms": ["javascript=>js"]
