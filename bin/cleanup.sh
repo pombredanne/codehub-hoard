@@ -83,7 +83,7 @@ if [ ! -d $DATA_DIR ]; then
                         "type": "custom",
                         "tokenizer": "standard",
                         "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy"]
+                        "filter": ["lowercase","my_synonym_filter","edgy_title"]
                     },
                     "grimdall_analyzer": {
                         "type": "custom",
@@ -95,15 +95,20 @@ if [ ! -d $DATA_DIR ]; then
                         "type": "custom",
                         "tokenizer": "standard",
                         "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy"]
+                        "filter": ["lowercase","my_synonym_filter","edgy_lang"]
                     }
                 },
                 "filter": {
-                    "edgy": {
+                    "edgy_title": {
                         "type": "edge_ngram",
-                        "min_gram": "2",
+                        "min_gram": "4",
                         "max_gram": "10"
                     },
+                    "edgy_lang": {
+                         "type": "edge_ngram",
+                         "min_gram": "2",
+                         "max_gram": "10"
+                     },
                     "my_synonym_filter": {
                         "type": "synonym",
                         "synonyms": ["javascript=>js"]
