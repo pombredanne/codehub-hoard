@@ -12,7 +12,7 @@ DATA_DIR=${ingest.data.dir}/esearch/kindred/${CURR_DATE_TIME}
 mkdir -p $DATA_DIR
 
 PROJECTS_ES_URL=http://${elastic.server.url}/projects/_search/?size=10000
-#CODE_ES_URL=http://${elastic.server.url}/code/_search/?size=10000
+CODE_ES_URL=http://${elastic.server.url}/code/_search/?size=10000
 
 KINDRED_PORT=${kindred.port}
 KINDRED_DOMAIN_NAME=${kindred.domain.name}
@@ -25,7 +25,7 @@ CODE_DATA_FILE="$DATA_DIR/data-from-es-code.json"
 
 echo "Pulling ES data from $PROJECTS_ES_URL..."
 curl -get $PROJECTS_ES_URL -o "$PROJECT_DATA_FILE"
-#echo "Pulling ES data from $CODE_ES_URL..."
+echo "Pulling ES data from $CODE_ES_URL..."
 curl -get $CODE_ES_URL -o "$CODE_DATA_FILE"
 
 
@@ -38,6 +38,7 @@ else
     exit 1
 fi
 
+#Note: Kindred is not accepting code data yet
 #if [ -f "$CODE_DATA_FILE" ]
 #then
 #    echo "Pushing Code data to $KINDRED_URL..."

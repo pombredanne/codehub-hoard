@@ -48,7 +48,7 @@ curl -XPUT http://localhost:9200/projects/ -d '{
                     "type": "custom",
                     "tokenizer": "standard",
                     "char_filter": "my_char",
-                    "filter": ["lowercase","my_synonym_filter","edgy"]
+                    "filter": ["lowercase","my_synonym_filter","edgy_lang"]
                 },
                 "grimdall_analyzer": {
                     "type": "custom",
@@ -60,15 +60,20 @@ curl -XPUT http://localhost:9200/projects/ -d '{
                     "type": "custom",
                     "tokenizer": "standard",
                     "char_filter": "my_char",
-                    "filter": ["lowercase","my_synonym_filter","edgy"]
+                    "filter": ["lowercase","my_synonym_filter","edgy_title"]
                 }
             },
             "filter": {
-                "edgy": {
-                    "type": "edge_ngram",
-                    "min_gram": "2",
-                    "max_gram": "10"
-                },
+				"edgy_title": {
+					"type": "edge_ngram",
+					"min_gram": "4",
+					"max_gram": "10"
+				},
+				"edgy_lang": {
+					"type": "edge_ngram",
+					"min_gram": "2",
+					"max_gram": "10"
+				},
                 "my_synonym_filter": {
                     "type": "synonym",
                     "synonyms": ["javascript=>js"]

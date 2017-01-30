@@ -258,6 +258,26 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>sonar-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${basedir}/target/ingress/github/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/ingress/github/config/</directory>
+                                    <includes>
+                                        <include>*.*</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>install-properties</id>
                         <phase>package</phase>
                         <goals>
