@@ -127,7 +127,7 @@ object Github extends GithubBase{
       (repoJson \ "stargazers_count").extract[Int],
       forks,
       0,//num of releases
-      (repoJson \ "updated_at").extract[String],
+      (repoJson \ "pushed_at").extract[String],
       (repoJson \ "created_at").extract[String],
       contributors,
       languages,
@@ -224,7 +224,7 @@ object Github extends GithubBase{
     var autoSuggestFields = ArrayBuffer.empty[SuggestField]
     autoSuggestFields += SuggestField(List(repoNameClean),repoNameClean + "# name")
     autoSuggestFields += SuggestField(List(repoName), repoNameClean + "# name")
-    autoSuggestFields += SuggestField(repoDescCleanList, repoNameClean + "# desc")
+    autoSuggestFields += SuggestField(repoDescCleanList, repoNameClean + "# description")
     autoSuggestFields += SuggestField(languages.keySet.toList, repoNameClean + "# languages")
     autoSuggestFields += SuggestField(contribNames, repoNameClean + "# contributors")
     autoSuggestFields.toList
