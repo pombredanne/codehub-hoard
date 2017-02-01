@@ -113,7 +113,7 @@ object Sonar extends GithubBase{
                       repoName,
                       env,
                       (repoJson \ "language").extract[String],
-                      (repoJson \ "updated_at").extract[String],
+                      (repoJson \ "pushed_at").extract[String],
                       (repoJson \ "created_at").extract[String],
                       metricFinal
     )
