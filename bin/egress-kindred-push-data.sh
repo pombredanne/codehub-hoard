@@ -29,7 +29,7 @@ curl -get $PROJECTS_ES_URL -o "$PROJECT_DATA_FILE"
 if [ -f "$PROJECT_DATA_FILE" ]
 then
     echo "Pushing Projects data to $KINDRED_URL..."
-    curl -v POST http://"$KINDRED_DOMAIN_NAME":"$KINDRED_PROD_PORT""$KINDRED_PATH" -d @$PROJECT_DATA_FILE --header "Content-Type: application/json"
+    curl -v POST http://"$KINDRED_DOMAIN_NAME":"$KINDRED_PORT""$KINDRED_PATH" -d @$PROJECT_DATA_FILE --header "Content-Type: application/json"
 else
     echo "$PROJECT_DATA_FILE Not Found!"
     exit 1
