@@ -8,7 +8,7 @@ env:
   - HEIMDALL_BRANCH=development
   - HEIMDALL_PACKAGE_NAME=hoard-ingest-1.0-SNAPSHOT-dist-assembly.zip
 script:
-  - mvn clean package -DskipTests
+  - mvn clean package -Pdev -DskipTests
 before_deploy:
   - mkdir -p dpl_cd_upload
   - cp target/$HEIMDALL_PACKAGE_NAME dpl_cd_upload
