@@ -2,7 +2,7 @@ package com.bah.heimdall.ingestjobs
 
 import java.util.Date
 
-import com.bah.heimdall.common.{AppConfig, JsonUtils, KafkaMessage, KafkaProducer}
+import com.bah.heimdall.common._
 import com.bah.heimdall.common.AppConstants._
 import com.bah.heimdall.common.JsonUtils._
 import com.bah.heimdall.common.HttpUtils._
@@ -10,6 +10,7 @@ import com.bah.heimdall.common.CodecUtils._
 import com.bah.heimdall.ingestjobs.Project._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Dataset
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
@@ -67,7 +68,8 @@ object Github extends GithubBase{
       val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
       val entOrgsRdd = sc.parallelize(orgsList)
       val entOutRdd = pullData(ENTERPRISE, entOrgsRdd)
-      pubOutRdd.union(entOutRdd).saveAsTextFile(outPath)
+      val resultsRdd = pubOutRdd.union(entOutRdd)
+      resultsRdd.saveAsTextFile(outPath)
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)

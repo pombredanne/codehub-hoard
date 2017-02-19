@@ -2,9 +2,9 @@ package com.bah.heimdall.process
 
 import java.util.Date
 
-import com.bah.heimdall.common.{AppConfig, KafkaConsumer}
+import com.bah.heimdall.common.{AppConfig, ElasticClientManager, KafkaConsumer}
 import com.bah.heimdall.common.AppConstants._
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods._
 
@@ -28,6 +28,12 @@ object ElasticDataOutput {
     val es_action = if (action.equalsIgnoreCase(ES_ACTION_UPSERT)) ES_ACTION_UPDATE else action
     val outJson = s"""{$es_action:{"_index": \"$indexName\","_type":\"$docType\", "_id":\"$id\"}}\n""" + jsonStr
     outJson
+  }
+
+  def getOrhanedDocumentIds(fullSet:Dataset[String]): Dataset[String] ={
+    val elasticClientManager = ElasticClientManager(AppConfig.conf)
+    val esResponse = elasticClientManager.getAllDocumentIds("projects")
+
   }
 
   def main(args: Array[String]): Unit = {
@@ -73,9 +79,10 @@ object ElasticDataOutput {
         }
       }
       val resultDF = jsonDF.getOrElse(Seq.empty[String].toDF())
-      resultDF.printSchema()
-      resultDF.show()
+      //resultDF.printSchema()
+      //resultDF.show()
       val outDS = resultDF.toJSON.map(json => addIndexMetaData(json, actionType , indexName, docType))
+      val outDeleteDS = getOrhanedDocumentIds(outDS)
       if (outDS.count > 0 )
         outDS.rdd.saveAsTextFile(s"$outputPath/$batchId")
 
@@ -107,4 +114,5 @@ object ElasticDataOutput {
     }
   */
   }
+
 }
