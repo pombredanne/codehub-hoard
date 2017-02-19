@@ -74,6 +74,11 @@
             <artifactId>kafka-clients</artifactId>
             <version>0.10.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>2.4.4</version>
+        </dependency>
         <!-- Testing Dependencies -->
         <dependency>
             <groupId>org.scalatest</groupId>
