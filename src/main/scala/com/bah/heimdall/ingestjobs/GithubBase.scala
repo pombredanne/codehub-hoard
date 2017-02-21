@@ -12,17 +12,20 @@ import scala.collection.mutable.ArrayBuffer
 trait GithubBase {
   def isPublic(env:String) = (env == "PUBLIC")
 
-  def getPublicOrgsList(): Array[String] = {
-    AppConfig.conf.getString(ORGS).split(",").map(getSourceUrl(PUBLIC) + "users/" + _ +"?"+ getAccessToken(PUBLIC))
-  }
-
   def getSourceUrl(env:String) = {
-    if(isPublic(env)) AppConfig.conf.getString(PUB_GITHUB_API_URL) else AppConfig.conf.getString(ENT_GITHUB_API_URL)
+    if(isPublic(env))
+      AppConfig.conf.getString(PUB_GITHUB_API_URL)
+    else
+      AppConfig.conf.getString(ENT_GITHUB_API_URL)
   }
 
   def getAccessToken(env:String) = {
     val accessToken = if(isPublic(env)) AppConfig.conf.getString(PUB_ACCESS_TOKEN) else AppConfig.conf.getString(ENT_ACCESS_TOKEN)
     s"access_token=$accessToken"
+  }
+
+  def getPublicOrgsList(): Array[String] = {
+    AppConfig.conf.getString(ORGS).split(",").map(getSourceUrl(PUBLIC) + "users/" + _ +"?"+ getAccessToken(PUBLIC))
   }
 
   def getEnterpriseOrgTypesList(): Array[String] = {

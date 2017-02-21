@@ -5,10 +5,15 @@ INGEST_HOME=${ingest.home}
 DATA_HOME_DIR=${ingest.data.home.dir}
 DATA_DIR=${ingest.data.dir}
 
+
 #Restore old config file settings after deploying. This will be removed once we
 #have a mechanism to encrypt the github tokens in config files
-cp $DATA_DIR/config/application.conf $INGEST_HOME/config/application.conf
-cp $DATA_DIR/config/ingest.conf $INGEST_HOME/ingress/github/config/ingest.conf
+if [[ -f $DATA_HOME_DIR/config/application_orig.conf ]]; then
+    cp $DATA_HOME_DIR/config/application_orig.conf $INGEST_HOME/config/application.conf
+fi
+if [[ -f $DATA_HOME_DIR/config/ingest_orig.conf ]]; then
+    cp $DATA_HOME_DIR/config/ingest_orig.conf $INGEST_HOME/ingress/github/config/ingest.conf
+fi
 
 #AWS deploys the apps as root, need to change the ownership to ec2-user after deploying
 cd $INGEST_HOME
@@ -36,114 +41,6 @@ if [ ! -d $DATA_DIR ]; then
 
     chmod -R 777 "$SEARCH_DATA_DIR"
     chmod -R 777 "$PROCESS_DATA_DIR"
-
-    #Delete indices - for dev purpose only
-    curl -XDELETE 'http://${elastic.server.url}/projects/'
-    curl -XDELETE 'http://${elastic.server.url}/code/'
-
-    #Create Projects Index
-    curl -XPUT http://${elastic.server.url}/projects/ -d '{
-        "mappings": {
-            "project": {
-                "_timestamp": {
-                        "enabled": true
-                 },
-                "properties": {
-                    "project_name": {
-                        "type": "string",
-                          "analyzer": "title_analyzer"
-                    },
-                    "project_description": {
-                        "type": "string",
-                            "analyzer": "grimdall_analyzer"
-                    },
-                    "content": {
-                        "type": "string",
-                            "analyzer": "grimdall_analyzer"
-                    },
-                    "language": {
-                        "type": "string",
-                            "analyzer": "language_analyzer"
-                    },
-                    "contributors_list" : {
-                        "type" : "object"
-                    },
-                    "suggest" : {
-                        "type" : "completion",
-                        "analyzer" : "simple",
-                        "search_analyzer" : "simple"
-                    }
-                }
-            }
-        },
-        "settings": {
-            "analysis": {
-                "analyzer": {
-                    "title_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy_titles"]
-                    },
-                    "grimdall_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","my_stop","my_snow"]
-                    },
-                    "language_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "char_filter": "my_char",
-                        "filter": ["lowercase","my_synonym_filter","edgy_lang"]
-                    }
-                },
-                "filter": {
-                    "edgy_title": {
-                        "type": "edge_ngram",
-                        "min_gram": "4",
-                        "max_gram": "10"
-                    },
-                    "edgy_lang": {
-                         "type": "edge_ngram",
-                         "min_gram": "2",
-                         "max_gram": "10"
-                     },
-                    "my_synonym_filter": {
-                        "type": "synonym",
-                        "synonyms": ["javascript=>js"]
-                    },
-                    "my_stop": {
-                        "type": "stop",
-                        "stopwords": "_english_"
-                    },
-                    "my_snow": {
-                        "type": "snowball",
-                        "language": "English"
-                    }
-                },
-                "char_filter": {
-                    "my_char": {
-                        "type": "mapping",
-                        "mappings": ["++ => plusplus", "# => sharp"]
-                    }
-                }
-            }
-        }
-    }'
-
-    #Create empty index for code
-    curl -XPUT http://${elastic.server.url}/code/ -d '{
-        "mappings": {
-            "project": {
-                "_timestamp": {
-                        "enabled": true
-                 }
-            }
-        }
-    }'
-
-    echo "Cleanup complete"
 fi
 
 exit 0

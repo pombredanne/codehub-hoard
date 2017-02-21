@@ -45,7 +45,7 @@ if [ ! -d /tmp/spark-events ]; then
  mkdir -p /tmp/spark-events
 fi
 
-#Get and install spark in local mode
+#Get and install spark in standalone deploy mode for now
 echo http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz
 wget -P $TEMP/ http://d3kbcqa49mib13.cloudfront.net/${SPARK_VERSION}.tgz
 tar zxvf $TEMP/$SPARK_VERSION.tgz -C $INSTALL_TOOLS_DIR/
@@ -91,5 +91,8 @@ sleep 10
 
 echo Starting Kafka Server ...
 sudo -u ec2-user $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
+
+
+./create-kafka-topics.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION
 
 echo Tools setup complete!

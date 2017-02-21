@@ -56,7 +56,7 @@ public class IngestUtil {
             }
         } catch (Exception e) {
             System.out.println(AppConstants.STAGE_ERROR() + "Error occurred while accessing : " + url);
-            e.printStackTrace();
+            //e.printStackTrace();
             response.add("{\""+AppConstants.STAGE_ERROR()+"\":\""+e.getMessage()+"\"}");
             if(! continueOnErr){
                 throw new RuntimeException(e);

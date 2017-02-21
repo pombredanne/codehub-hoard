@@ -66,7 +66,7 @@ object Sonar extends GithubBase{
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
-    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:update")
+    val msg = new KafkaMessage(batchId.toString, s"$batchId:$indexName:$ES_ACTION_UPSERT")
     producer.sendMessageBlocking(completeTopic, msg , AppConfig.conf)
     producer.close()
 
@@ -97,7 +97,6 @@ object Sonar extends GithubBase{
     val orgId = (orgJson \ "id").extract[String]
     val repoName = (repoJson \ "name").extract[String]
 
-    //val orgMetricsJson = getOrgMetricsJson(metricsToCollect, "org.eclipse.ease:ease")
     val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName)
     val metricsMap = getMetrics(orgMetricsJson)
     var metricFinal  = Map.empty[String, Map[String, String]]
@@ -113,7 +112,7 @@ object Sonar extends GithubBase{
                       repoName,
                       env,
                       (repoJson \ "language").extract[String],
-                      (repoJson \ "updated_at").extract[String],
+                      (repoJson \ "pushed_at").extract[String],
                       (repoJson \ "created_at").extract[String],
                       metricFinal
     )
