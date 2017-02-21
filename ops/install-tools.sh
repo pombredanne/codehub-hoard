@@ -2,12 +2,16 @@
 
 set -e
 
-#Prerequisites:
-# - Setup passwordless ssh to localhost for user ec2-user
-# - Make sure JAVA_HOME is set
+# This scripts installs all the tools needed to run hoard. It will install all tools locally.
+#
+# usage: sudo ./install-tools.sh
+#
+# If you encounter error while installing, remove following folders, fix the error and start again
+# INSTALL_TOOLS_DIR, DATA_HOME_DIR, INGEST_HOME
+#
 
 INSTALL_TOOLS_DIR=${ingest.tools.dir}
-DATA_DIR=${ingest.data.home.dir}
+DATA_HOME_DIR=${ingest.data.home.dir}
 INGEST_HOME=${ingest.home}
 
 INSTALL_SCRIPTS_DIR=.
@@ -33,8 +37,8 @@ if [ ! -d $SPARK_WORKSPACE_DIR ]; then
  mkdir -p $SPARK_WORKSPACE_DIR
 fi
 
-if [ ! -d $DATA_DIR ]; then
- mkdir -p $DATA_DIR
+if [ ! -d $DATA_HOME_DIR ]; then
+ mkdir -p $DATA_HOME_DIR
 fi
 
 if [ ! -d $TEMP ]; then
@@ -67,12 +71,13 @@ tar zxvf $TEMP/${NIFI_VERSION}-bin.tar.gz -C $INSTALL_TOOLS_DIR/
 
 #change nifi default port for the webapp from 8080(which conflicts with spark port) to 8088
 sed -i 's/nifi.web.http.port=8080/nifi.web.http.port='$NIFI_WEB_PORT'/' $INSTALL_TOOLS_DIR/$NIFI_VERSION/conf/nifi.properties
+
 rm -r tmp
 
 #Change user and ownership of the hoard directories to ec2-user. Everything will be run by this user
 sudo chown -R ec2-user:ec2-user $INGEST_HOME
 sudo chown -R ec2-user:ec2-user $INSTALL_TOOLS_DIR
-sudo chown -R ec2-user:ec2-user $DATA_DIR
+sudo chown -R ec2-user:ec2-user $DATA_HOME_DIR
 sudo chown -R ec2-user:ec2-user /tmp/spark-events
 
 #Start all services
@@ -91,4 +96,7 @@ sleep 10
 echo Starting Kafka Server ...
 sudo -u ec2-user $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
 
-echo setup complete!
+#Create needed queues
+./create-kafka-topics.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION
+
+echo Tools setup complete!

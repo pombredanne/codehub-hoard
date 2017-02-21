@@ -6,13 +6,6 @@ KAFKA_ZOOKEEPER_SERVER=${kafka.zookeeper.servers}
 
 echo creating kafka topics...
 
-$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic INGEST_QUEUE
-$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic CLONED_DATA_QUEUE
-$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic SONAR_DATA_QUEUE
-$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic DEPENDENCY_DATA_QUEUE
-
-
-
 $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --replication-factor 1 --partitions 1 --topic INGEST_QUEUE
 $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --replication-factor 1 --partitions 1 --topic CLONED_DATA_QUEUE
 $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --replication-factor 1 --partitions 1 --topic SONAR_DATA_QUEUE

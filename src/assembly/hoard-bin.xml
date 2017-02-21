@@ -16,8 +16,27 @@
 		</fileSet>
 		<!-- copy sonar and dependency files-->
 		<fileSet>
-			<directory>${basedir}/ingress</directory>
-			<outputDirectory>ingress</outputDirectory>
+			<directory>${basedir}/ingress/github/code</directory>
+			<outputDirectory>ingress/github/code/</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/ingress/github/sonar</directory>
+			<outputDirectory>ingress/github/sonar/</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
+			<fileMode>0755</fileMode>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/target/ingress/github/config</directory>
+			<outputDirectory>ingress/github/config/</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
 			<fileMode>0755</fileMode>
 		</fileSet>
 		<fileSet>

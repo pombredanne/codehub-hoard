@@ -97,7 +97,6 @@ object Sonar extends GithubBase{
     val orgId = (orgJson \ "id").extract[String]
     val repoName = (repoJson \ "name").extract[String]
 
-    //val orgMetricsJson = getOrgMetricsJson(metricsToCollect, "org.eclipse.ease:ease")
     val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName)
     val metricsMap = getMetrics(orgMetricsJson)
     var metricFinal  = Map.empty[String, Map[String, String]]

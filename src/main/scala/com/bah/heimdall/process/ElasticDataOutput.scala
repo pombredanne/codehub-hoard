@@ -2,9 +2,9 @@ package com.bah.heimdall.process
 
 import java.util.Date
 
-import com.bah.heimdall.common.{AppConfig, KafkaConsumer}
+import com.bah.heimdall.common.{AppConfig, ElasticClientManager, KafkaConsumer}
 import com.bah.heimdall.common.AppConstants._
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods._
 
@@ -29,6 +29,7 @@ object ElasticDataOutput {
     val outJson = s"""{$es_action:{"_index": \"$indexName\","_type":\"$docType\", "_id":\"$id\"}}\n""" + jsonStr
     outJson
   }
+
 
   def main(args: Array[String]): Unit = {
     if(args.length <4) {
@@ -73,38 +74,14 @@ object ElasticDataOutput {
         }
       }
       val resultDF = jsonDF.getOrElse(Seq.empty[String].toDF())
-      resultDF.printSchema()
-      resultDF.show()
+      //resultDF.printSchema()
+      //resultDF.show()
       val outDS = resultDF.toJSON.map(json => addIndexMetaData(json, actionType , indexName, docType))
       if (outDS.count > 0 )
         outDS.rdd.saveAsTextFile(s"$outputPath/$batchId")
 
     })
 
-    //Preparing data to be updated in existing index
-
-   // println("Processing updates for ES bulk update")
-
-   // val indexName = conf.getString(CODES_INDEX_NAME) //this will be sent in kafka message later t
-   // val updateJsonDF = Try(spark.read.json(s"$updateInputPath/*.json")) match {
-   //   case Success(jsonDF) => Some(jsonDF)
-   //   case Failure(ex) => {
-   //     println(s"$STAGE_ERROR: Error occurred while processing Updates for Index:$indexName")
-   //     ex.printStackTrace()
-   //     None
-    //  }
-    //}
-
-    /*val updateDF = updateJsonDF.getOrElse(Seq.empty[String].toDF())
-    updateDF.printSchema()
-    updateDF.show()
-    val updateOutDS = updateDF.toJSON.map(json => {
-        addIndexMetaData(json, ES_ACTION_UPDATE , indexName, docType)
-    })
-    if (updateOutDS.count > 0 ) {
-      val tempBatchId = new Date().getTime();
-      updateOutDS.rdd.saveAsTextFile(s"$outputPath/$tempBatchId")
-    }
-  */
   }
+
 }

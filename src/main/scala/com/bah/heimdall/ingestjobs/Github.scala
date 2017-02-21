@@ -2,7 +2,7 @@ package com.bah.heimdall.ingestjobs
 
 import java.util.Date
 
-import com.bah.heimdall.common.{AppConfig, JsonUtils, KafkaMessage, KafkaProducer}
+import com.bah.heimdall.common._
 import com.bah.heimdall.common.AppConstants._
 import com.bah.heimdall.common.JsonUtils._
 import com.bah.heimdall.common.HttpUtils._
@@ -10,6 +10,7 @@ import com.bah.heimdall.common.CodecUtils._
 import com.bah.heimdall.ingestjobs.Project._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Dataset
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
@@ -43,6 +44,7 @@ object Github extends GithubBase{
 
     val sparkConf = new SparkConf().setAppName("Ingest Project Data")
     sparkConf.set("spark.eventLog.enabled", "true")
+    sparkConf.set("spark.eventLog.dir", "/var/heimdall/logs")
     val sc = new SparkContext(sparkConf)
     //print configs
     //sc.getConf.toDebugString()
@@ -67,7 +69,8 @@ object Github extends GithubBase{
       val orgsList = (getResponseWithPagedData(orgTypeList(0), true) ++ getResponseWithPagedData(orgTypeList(1), true))
       val entOrgsRdd = sc.parallelize(orgsList)
       val entOutRdd = pullData(ENTERPRISE, entOrgsRdd)
-      pubOutRdd.union(entOutRdd).saveAsTextFile(outPath)
+      val resultsRdd = pubOutRdd.union(entOutRdd)
+      resultsRdd.saveAsTextFile(outPath)
     }
     //Write completion message
     val producer = KafkaProducer(AppConfig.conf)
@@ -81,19 +84,20 @@ object Github extends GithubBase{
   def pullData(env:String, orgsRdd: RDD[JValue]): RDD[String] = {
     val orgsOutput = orgsRdd.map(orgJson => {
       val reposUrl = (orgJson \ "repos_url").extract[String]
+      val orgLogin = (orgJson \ "login").extract[String]
+      val orgId = (orgJson \ "id").extract[String]
+
       val orgRepos = getOrgRepos(env, reposUrl)
       //Repo fields
       val orgReposOutput = orgRepos.children.map(repoJson => {
-        buildOrgStructure(env, orgJson, repoJson)
+        buildOrgStructure(env, orgLogin, orgId, repoJson)
       })
       write(orgReposOutput)
     })
     orgsOutput
   }
 
-  def buildOrgStructure(env:String, orgJson: JValue, repoJson: JValue): OrgRepo = {
-    val orgLogin = (orgJson \ "login").extract[String]
-    val orgId = (orgJson \ "id").extract[String]
+  def buildOrgStructure(env:String, orgLogin:String, orgId:String, repoJson: JValue): OrgRepo = {
     val repoName = (repoJson \ "name").extract[String]
     val repoDesc = (repoJson \ "description").extract[String]
     //Get list properties

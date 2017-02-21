@@ -108,7 +108,7 @@ class GithubSpec extends BaseSparkSpec with Matchers {
                         "type": "User"
                         }]"""
     val expectedJson = """{"organization":"Project-Heimdall","organization_url":"https://github.com/Project-Heimdall","org_avatar_url":"https://avatars.githubusercontent.com/u/18699526?v=3","org_type":"Organization","origin":"public","repository":"archive-chorus-uidesigns","contributors":[{"username":"kimchy","profile_url":"https://github.com/kimchy","avatar_url":"https://avatars.githubusercontent.com/u/41300?v=3","user_type":"User"},{"username":"clintongormley","profile_url":"https://github.com/clintongormley","avatar_url":"https://avatars.githubusercontent.com/u/56599?v=3","user_type":"User"}]}"""
-    val orgRepo = Github.buildOrgStructure(PUBLIC, parse("""{"login":"elastic"}"""), parse(orgRepoJson))
+    val orgRepo = Github.buildOrgStructure(PUBLIC, "elastic", "elastic12345", parse(orgRepoJson))
     //println(orgRepo)
     println(orgRepo.toString())
     //assert(write(orgRepo) == expectedJson)
