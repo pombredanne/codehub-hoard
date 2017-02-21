@@ -2,9 +2,13 @@
 
 set -e
 
-#Prerequisites:
-# - Setup passwordless ssh to localhost for user ec2-user
-# - Make sure JAVA_HOME is set
+# This scripts installs all the tools needed to run hoard. It will install all tools locally.
+#
+# usage: sudo ./install-tools.sh
+#
+# If you encounter error while installing, remove following folders, fix the error and start again
+# INSTALL_TOOLS_DIR, DATA_HOME_DIR, INGEST_HOME
+#
 
 INSTALL_TOOLS_DIR=${ingest.tools.dir}
 DATA_HOME_DIR=${ingest.data.home.dir}
@@ -92,7 +96,7 @@ sleep 10
 echo Starting Kafka Server ...
 sudo -u ec2-user $INSTALL_TOOLS_DIR/$KAFKA_VERSION/bin/kafka-server-start.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION/config/server.properties > /dev/null 2>&1 &
 
-
+#Create needed queues
 ./create-kafka-topics.sh $INSTALL_TOOLS_DIR/$KAFKA_VERSION
 
 echo Tools setup complete!
