@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ES_SERVER_URL=${elastic.server.url}
-ES_S3_REPO=es_s3_repository_${ingest.env}
+ES_S3_REPO=es_s3_repository
 
 echo 'Creating S3 repository for backup..'
 curl -XPUT ${ES_SERVER_URL}/_snapshot/${ES_S3_REPO} -d '
