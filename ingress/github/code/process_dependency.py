@@ -191,27 +191,25 @@ def filter_dependencies(repo):
 def automate_processes(config, repo):
     logging.info(time.strftime("%c")+' Started')
     combined_results = []
-    if 'language' in repo:
-        if repo['language'] == 'Java':
-            processed_java_repo = process_java_projects(repo,config)
-            print(processed_java_repo)
-            if processed_java_repo is not None:
-                java_dependency_res = parse_java_projects(processed_java_repo)
-                if java_dependency_res is not None:
-                    combined_results = combined_results + java_dependency_res
-        if repo['language'] == 'JavaScript':
-            processed_js_repo = process_js_projects(repo,config)
-            print(processed_js_repo)
-            if processed_js_repo is not None:
-                js_dependency_res = parse_js_projects(processed_js_repo)
-                if js_dependency_res is not None:
-                    combined_results = combined_results + js_dependency_res
-                    print(js_dependency_res)
-        else:
-            pass
+    processed_java_repo = process_java_projects(repo,config)
+    print(processed_java_repo)
+    if processed_java_repo is not None:
+        java_dependency_res = parse_java_projects(processed_java_repo)
+        if java_dependency_res is not None:
+            combined_results = combined_results + java_dependency_res
+    processed_js_repo = process_js_projects(repo,config)
+    print(processed_js_repo)
+    if processed_js_repo is not None:
+        js_dependency_res = parse_js_projects(processed_js_repo)
+        if js_dependency_res is not None:
+            combined_results = combined_results + js_dependency_res
+            print(js_dependency_res)
+    else:
+        pass
     repo['dependency_content'] = combined_results
+    print("repo depedencies are being processed")
+    print(repo)
     return repo
-
 
 
 if __name__ == "__main__":
