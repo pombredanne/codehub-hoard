@@ -43,8 +43,10 @@ def writeToConfigFile(repo):
     exclusions = '**/system/**, **/test/**, **/img/**, **/logs/**, **/fonts/**, **/generated-sources/**, **/packages/**, **/docs/**, **/node_modules/**, **/bower_components/**,**/dist/**,**/unity.js,**/bootstrap.css, **/tools/**'
     for src in repo['src_list']:
         aggregated_src = src + "," + aggregated_src
+    print("Building sonar configuration file...")
+    print(repo)
     file_object = open(repo['root_dir']+"/sonar-project.properties", 'w')
-    file_object.write("sonar.projectKey="+repo['project_name'])
+    file_object.write("sonar.projectKey="+repo['org'] + "_" + repo['project_name'])
     file_object.write("\n")
     file_object.write("sonar.projectName="+repo['project_name']+" of "+repo["org"])
     file_object.write("\n")
