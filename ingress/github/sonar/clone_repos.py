@@ -34,10 +34,7 @@ def collect_repositries(config):
     else:
         orgs_users_ent = get_org_enterprise_repos(config) + get_users_enterprise_repos(config)
         ent_repos_customized = customize_ent_repo_attributes_mapping(orgs_users_ent)
-        for repo in ent_repos_customized:
-            if repo['project_name'] not in ['DCCPILOT','CMRA','attune','rapid-ios','Alter','Apple','CAC-P1-TEST','Catapult']:
-                temp_filtered_repos.append(repo)
-        clone_enterprise_projects(temp_filtered_repos,config)
+        clone_enterprise_projects(ent_repos_customized,config)
         pub_repos = get_public_repos(config)
         pub_repos_custmoized = customize_repo_attributes_mapping(pub_repos)
         clone_public_projects(pub_repos_custmoized,config)
