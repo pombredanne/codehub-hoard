@@ -15,24 +15,24 @@ before_deploy:
 deploy:
   - provider: s3
     access_key_id: &1
-      secure: lQvjtJCe7qdl8Hsaqve+UdcqKFFZYWa7oQdgsse5ZVGeafBh8FzAn3OlqG6IaLaMS+HMaTnRAGiSiGZPiBmQLMIdVf4sDrwxRT7F0UBSHl2p6pdXM2KIxlSEGdYviu+1An1ozIyqZciI8Eqi20cbjhX9xiwR98h4rm2mZC0YpEWjMsx4y2Lk3aB4Z237q/+qlRIksYvrJpDvSknY33AbFMV4I2R1R+bHhV+TOnHbR/68nNLgVj0kZ+mioebljgc2/78tGG0cibM5zCTNBnjC2PjPSZOCI2ynMu4QLtOKHbKE7/cHnpTuS3o9UH+M28hHgL0NA4cj08ucuEJLA1aBcr7oMEDZeNljejtv2jFFIlSbdl/2BX3y3S1dspKMQCXbpUBw6UiE+YI1MM2RYHZJYNyw8Ua6p9f7KwlBKl04v+ALegP6/vVJJfjjifXqe4U9rtZjajxuYRUE+3ol+kJuFoTmZdSAGKb2TmB7NeZBrNZi8Nsfd29YTkt7dCKKMVMnvNjR759UtxSat1f6SVAJcfdJsyDtV8TpLk5FPwCJTSW3q02px/yz6LqYlHw+iinooFl0/c21nn6P/wmxdvSFoayXU/eICULecZ1zJhMGSNhBO7OYHhORWVD5FiaJBbAvYXxEBpqzdbw5iWPU3Nm3PoBVxU/rWjvgfM1i4La20Bo=
+      secure: lsNDZlc6bxe4gSaWxgKppQK9XQvbUBxD9FHhYq0F7UdP7JXQ5IxrEtBQeY4z6VO/tlDOYbw736ptRQjiUZkRBPycYk+y8raBYSElTAXoAYg2E8HGOEtgPqTCG5tlGXYKUiFhrWFznhSxKFjInGuUxNSjrZXDLXLYeqy2rI6YvWUcgm9ls2dR4RXdk/x39xwMhWHvuepUL59vy15nW05a1i+vGcV0NfE3zkGSttmT7Mhz8mPOYrCQbJOpmgEFNrnxURnmiqtsIE18a8oa2VtP2oAqTzysY4cKooPZgSzicXszFGNi3xgwVsFXWMkavIFnoIgmlEbw/Erwf3cHTgkmw4flUEl/woZRhHpkjZJ1+c/k9yGMx74NmH/BtRsZfs4mF3L50e7T2IgEu8e21aW0PnLQ3iJ2VSnST6Pf3Svv+exqkfAD5gJFJXMBDouYlr/xIajBcrOjs1NF8Ws6PZoWYYxWIZsQPXlaKrY/9jjK/AuefCJe4SVY8HQCPodg7ayaC/F4xTYjb+a/DOhDVKNkhIHKDby9SOLWHwUyVEADHgKjTmJp5NMck7IvEEguRvt3Cv4vMU3vjm/M7PO6vOBBYsPtD4wTFrM3uZRM9tgF9cJ57B+pbt4x1dfAftM453JqVQThuzDLFIOHUNUYWI72QtvJYjUbKwAJ9LjfgQ9rvOs=
     secret_access_key: &2
-      secure: C1H2gqTDNITIWspR4r6mo2iePYQhYTw6SQPgHfKjkOX8WQ7p15RTiKFtQDR5pmQjyy09LdZuVSJEItrGxVgCZfBpVpSxhkgzEQKcTHFKqkCHea3UMZBsXbDvsG7q0tsKxgxb2FjHVJ6DBRldcEQXYgNz8ZS0+ccKnfubUB6fhFw/RjeIs1ImhYDU/C2gFPB08ewawzkl544Wi9hAofOwBJRz/gS/R92Xqi8barhSW2JUxVx65UThaGSgCRFTgKIs7AKqGWcCidjNdtKJS43cMJthCUztrB56dmV9Le3VeUvHT3sx20mnwCEXjuL+PVF9J46sDaw2WZdM4xyVqLEsTtwAyvHZGQ9JxNskeQ4VyQvf1JeQCdz7T/IEYoOp7mO1zU2UeC1KR8Tm500o00Etq7+ond3qzgyQGB/cLTp4XwC3aleTguHUt8/V9zVWBNw6cUGDbDx52Zw4zA4Tf/dienk0uo8p83ic06L2sVjLhXnNXsPlBrLd3JRpQhsk83fSbGKqIwLjIFRCvtOSkLSLDPLY82UTs/USx2JokkyHwYmmYakd1TancyvTBkJfp/1gefmumbZe+QBCDgntDaZwluV57f/9VF77Rrmz2cy5ejE5G2sieU0fhfbk2vwgbFpXeJSGx4YaVRlBObB5by/5FrgL1flhWG8vpUVinZu4Bpo=
+      secure: HZJwVIziEPFT0bLYjsos5GkQTdhUEHuQF5ymT4QEF9KPxjBrnrOhMXguMJriFpFTQBesSD5VJ4StZa8PkRlR+hIO+bmew1ehLUrdgBR4xQjdBRKupS9YYpFCKS3s1FUrxD9qJQhlPDZwWCwTSAJD86pMU8UaTjZrdQJ5yvTxQbSU8DmlLuaqt38/KlA9H4aA9nNuo0hcSXVVwXNWvFkfhJ7qM7g5se7qfEmlMWkoc0TjGLSp425UZhMmv4yM6jqkzfaiTd+utFYmYkV9I2ngPWcV0+WAQIjnJNJNnjeyZlyllSHk2hC6ibMEaAu1llQEzG+LxBxCluvKayI3X9Dx4NRJSmx5yOFwcc7WxuK4wWStEWDDtoWKcTYNOaXOq0023ktKdXT1j4CIQuJ5H9H0ny/ZPnkpyKN1H/mforQ/dRtsqbsH+JwiSlueJOGo2aNVemXG6MmBWOEGn3zkdeIHPJ0CGuIflns5NIjUTboTap+vFL9k0CzoYruct3XOArdpHJCXcTNh9FJgDxgii+Q+DMNg6o06WAXJnEXKuOjZvPm5isI0GpxytcdDU5og+u98NvMxX7jfMlEmBLBcaam0NQKA0bG53hliXIus3GXf430FOvovkXI4DcesUXTTIxnPSxLyPCITtayG0QSzLzha/ZbPlvB500rFNsbFhXu6SOw=
     local_dir: dpl_cd_upload
     on: &3
       repo: Project-Heimdall/heimdall-hoard
       branch: $HEIMDALL_BRANCH
-    bucket: dev-heimdall-hoard-codedeploy
+    bucket: dev-stage-hoard-codedeploy
     region: us-west-2
     skip_cleanup: true
   - provider: codedeploy
     access_key_id: *1
     secret_access_key: *2
-    bucket: dev-heimdall-hoard-codedeploy
+    bucket: dev-stage-hoard-codedeploy
     key: $HEIMDALL_PACKAGE_NAME
     bundle_type: zip
-    application: dev-heimdall-hoard-app
-    deployment_group: dev-heimdall-hoard-group
+    application: dev-stage-hoard-app
+    deployment_group: dev-stage-hoard-group
     region: us-east-1
     on: *3
     skip_cleanup: true
