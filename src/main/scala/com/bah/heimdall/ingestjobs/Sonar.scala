@@ -86,8 +86,9 @@ object Sonar extends GithubBase{
     orgsOutput
   }
 
-  def getOrgMetricsJson(metricTypes: String, projectName:String): JValue = {
-    val url = AppConfig.conf.getString(SONAR_API_REMOTE_BASE_URL)+s"?resource=$projectName&metrics=$metricTypes&format=json"
+  def getOrgMetricsJson(metricTypes: String, projectName:String, org:String): JValue = {
+    val resourceStr = org + "_" + projectName
+    val url = AppConfig.conf.getString(SONAR_API_REMOTE_BASE_URL)+s"?resource=$resourceStr&metrics=$metricTypes&format=json"
     parse(getResponse(url, true))
   }
 
@@ -97,7 +98,7 @@ object Sonar extends GithubBase{
     val orgId = (orgJson \ "id").extract[String]
     val repoName = (repoJson \ "name").extract[String]
 
-    val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName)
+    val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName, orgLogin)
     val metricsMap = getMetrics(orgMetricsJson)
     var metricFinal  = Map.empty[String, Map[String, String]]
     metricsMap.foreach(entry => {
