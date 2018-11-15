@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-INGEST_TOOLS=${ingest.tools.dir}
-INGEST_HOME=${ingest.home}
-DATA_HOME=${ingest.data.home.dir}
+INGEST_HOME=/opt/heimdall
+INGEST_TOOLS=/opt/ingest-tools
+DATA_DIR=/var/heimdall/data
 
 #Save old config file settings before deploying. This will be removed once we
 #have a mechanism to encrypt the github token in config files

@@ -16,7 +16,7 @@ from pykafka import KafkaClient
 import os, sys
 sys.path.append(os.path.abspath("../config"))
 import configparams
-ssl_verify='/etc/ssl/certs/ca-bundle.trust.crt'
+ssl_verify='/etc/ssl/cert.pem'
 
 def collect_repositries(config):
     logging.info(time.strftime("%c")+' collecting repositories name, clone_url')

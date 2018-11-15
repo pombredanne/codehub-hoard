@@ -3,7 +3,7 @@
 set -e
 
 
-DATA_DIR=${ingest.data.dir}
+DATA_DIR=/var/heimdall/data
 DATA_INPUT_DIR="${DATA_DIR}/esearch/input"
 
 #add sorting
@@ -23,7 +23,7 @@ do
     if [[ -f $file ]]; then
         cat ${dir}part* > ${outdirname}elastic_data.json
 
-        curl -s -XPOST ${elastic.server.url}/_bulk --data-binary "@$outdirname/elastic_data.json" > /dev/null 2>&1
+        curl -s -XPOST http://localhost:9200/_bulk --data-binary "@$outdirname/elastic_data.json" > /dev/null 2>&1
         break
     fi
   done

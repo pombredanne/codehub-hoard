@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-INGEST_TOOLS=${ingest.tools.dir}
+INGEST_TOOLS=/opt/ingest-tools
 
 echo Starting Nifi ...
 #$INGEST_TOOLS/nifi-*/bin/nifi.sh start

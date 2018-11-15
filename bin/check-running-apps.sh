@@ -6,7 +6,7 @@
 #if any of the ingest scripts are currently running and waits till they are all done. Long running
 #processes are killed.
 
-INGEST_TOOLS=${ingest.tools.dir}
+INGEST_TOOLS=/opt/ingest-tools
 
 echo Stopping Nifi ...
 sudo -u ec2-user $INGEST_TOOLS/nifi-*/bin/nifi.sh stop

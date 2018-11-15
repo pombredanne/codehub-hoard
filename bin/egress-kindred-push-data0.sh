@@ -7,20 +7,15 @@
 #
 CURR_DATE_TIME="`date +%Y%m%d%H%M%S`";
 
-#DATA_DIR=${ingest.data.dir}/esearch/kindred/${CURR_DATE_TIME}
-DATA_DIR=/var/heimdall/data/esearch/kindred/${CURR_DATE_TIME}
+DATA_DIR=${ingest.data.dir}/esearch/kindred/${CURR_DATE_TIME}
+
 mkdir -p $DATA_DIR
 
-#PROJECTS_ES_URL=http://${elastic.server.url}/projects/_search/?size=10000
-#CODE_ES_URL=http://${elastic.server.url}/code/_search/?size=10000
-PROJECTS_ES_URL=http://localhost:9200/projects/_search/?size=10000
-CODE_ES_URL=http://localhost:9200/code/_search/?size=10000
+PROJECTS_ES_URL=http://${elastic.server.url}/projects/_search/?size=10000
+CODE_ES_URL=http://${elastic.server.url}/code/_search/?size=10000
 
-
-#KINDRED_PORT=${kindred.port}
-KINDRED_PORT=8085
-#KINDRED_DOMAIN_NAME=${kindred.domain.name}
-KINDRED_DOMAIN_NAME=localhost
+KINDRED_PORT=${kindred.port}
+KINDRED_DOMAIN_NAME=${kindred.domain.name}
 KINDRED_PATH=/recommendation-service/api/v1/update_doc_sim
 PROJECT_DATA_FILE="$DATA_DIR/data-from-es-project.json"
 CODE_DATA_FILE="$DATA_DIR/data-from-es-code.json"

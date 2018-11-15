@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJ_HOME_DIR=${ingest.home}
+PROJ_HOME_DIR=/opt/heimdall
 cd "$PROJ_HOME_DIR/ingress/github/sonar"
 pip install -r requirements.txt
-./process_sonar_messages.py --topic CLONED_DATA_QUEUE --install_sonar_runner
+./process_sonar_messages.py --topic CLONED_DATA_QUEUE #--install_sonar_runner

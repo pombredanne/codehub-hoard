@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 
-INGEST_HOME=${ingest.home}
-DATA_HOME_DIR=${ingest.data.home.dir}
-DATA_DIR=${ingest.data.dir}
+INGEST_HOME=/opt/heimdall
+INGEST_TOOLS=/opt/ingest-tools
+DATA_DIR=/var/heimdall/data
 
 
 #Restore old config file settings after deploying. This will be removed once we
