@@ -1,4 +1,4 @@
-Importing testing data a local elasticsearch
+Importing testing data into a local elasticsearch
 i) pull down the projects and code indices data into local directory
 
 ii)install elasticdump
