@@ -1,0 +1,11 @@
+Importing testing data a local elasticsearch
+i) pull down the projects and code indices data into local directory
+
+ii)install elasticdump
+      npm install elasticdump -g
+
+iii) Import the project index into local Elasticsearch instance
+      elasticdump --input=projects_data.json --output=http://localhost:9200/projects --type=data
+
+iv) Import the code index into local Elasticsearch instance
+      elasticdump --input=code_data.json --output=http://localhost:9200/code --type=data
