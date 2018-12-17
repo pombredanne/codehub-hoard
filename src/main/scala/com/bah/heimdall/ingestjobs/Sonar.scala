@@ -1,3 +1,4 @@
+
 package com.bah.heimdall.ingestjobs
 
 import java.util.Date
@@ -86,10 +87,10 @@ object Sonar extends GithubBase{
     orgsOutput
   }
 
-  def getOrgMetricsJson(metricTypes: String, projectName:String, org:String): JValue = {
+  def getOrgMetricsJson(metricTypes: String, projectName:String, org:String): String = {
     val resourceStr = org + "_" + projectName
     val url = AppConfig.conf.getString(SONAR_API_REMOTE_BASE_URL)+s"?resource=$resourceStr&metrics=$metricTypes&format=json"
-    parse(getResponse(url, true))
+    getResponse(url, true)
   }
 
   def buildOrgMetricsStructure(env:String, orgJson: JValue, repoJson: JValue): Metric = {
@@ -99,11 +100,15 @@ object Sonar extends GithubBase{
     val repoName = (repoJson \ "name").extract[String]
 
     val orgMetricsJson = getOrgMetricsJson(metricsToCollect, repoName, orgLogin)
-    val metricsMap = getMetrics(orgMetricsJson)
     var metricFinal  = Map.empty[String, Map[String, String]]
-    metricsMap.foreach(entry => {
-      metricFinal += (entry.get("key").getOrElse("") -> entry)
+     if (!orgMetricsJson.contains(STAGE_ERROR)){
+	val metricsMap = getMetrics(parse(orgMetricsJson))
+         metricsMap.foreach(entry => {
+         metricFinal += (entry.get("key").getOrElse("") -> entry)
     })
+	
+    }
+    
     val metrics = Metric(SRC_SONAR,
                       orgId + ES_ID_SEPARATOR + (repoJson \ "id").extract[String],
                       Org((repoJson \ "owner" \ "login").extract[String],
@@ -120,8 +125,9 @@ object Sonar extends GithubBase{
     metrics
   }
 
-  def getMetrics(metrics:JValue): List[Map[String,String]] = {
-    val metricsMap = (metrics \ "msr").extract[List[Map[String,String]]]
+def getMetrics(metrics:JValue): List[Map[String,String]] = {
+    val filtered_metrics = (metrics \ "msr")(0)
+    val metricsMap = filtered_metrics.values.asInstanceOf[List[Map[String,String]]]
     metricsMap
-  }
+ }
 }
