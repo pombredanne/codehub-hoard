@@ -15,7 +15,7 @@ object Project {
                      language:String,
                      stars:Int,
                      forks:Forks,
-                     releases:Int,
+                     releases:List[Release],
                      updated_at:String,
                      created_at:String,
                      contributors_list:List[Contributor],
@@ -32,4 +32,6 @@ object Project {
   case class SuggestField(input:List[String], output:String)
   case class Forks(forkedRepos:List[ForkRepo])
   case class ForkRepo(id:String, name:String, org_name:String)
+  case class Release(id:String, name:String, tag_name:String, assests:List[ReleaseAsset], total_downloads:Int)
+  case class ReleaseAsset(id:String, name:String, label:String, size:Int, download_count:Int)
 }
