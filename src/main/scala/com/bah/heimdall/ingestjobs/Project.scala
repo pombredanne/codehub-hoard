@@ -32,6 +32,6 @@ object Project {
   case class SuggestField(input:List[String], output:String)
   case class Forks(forkedRepos:List[ForkRepo])
   case class ForkRepo(id:String, name:String, org_name:String)
-  case class Release(id:String, name:String, tag_name:String, assests:List[ReleaseAsset], total_downloads:Int)
+  case class Release(id:String, name:String, tag_name:String, assets:List[ReleaseAsset], total_downloads:Int)
   case class ReleaseAsset(id:String, name:String, label:String, size:Int, download_count:Int)
 }
