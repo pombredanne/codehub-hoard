@@ -105,6 +105,7 @@ object Github extends GithubBase{
     val languagesJson = getRepoProperties(env, orgLogin, repoName, "languages")
     val watchers = getPagedRepoProperties(env, orgLogin, repoName, "subscribers")
     val forksJson = getPagedRepoProperties(env, orgLogin, repoName, "forks")
+    val releasesJson = getPagedRepoProperties(env, orgLogin, repoName, "releases")
     //Get readme file associated to repo
     val readmeRaw = getRepoProperties(env, orgLogin, repoName, "contents/README.md")
     //build
@@ -112,6 +113,7 @@ object Github extends GithubBase{
     val numWatchers = buildWatchers(watchers)
     val languages = buildLanguageMap(languagesJson)
     val forks = buildForks(forksJson)
+    val releases = buildReleases(releasesJson)
     //Auto suggest
     val autoSuggest = buildAutoSuggest(repoName,repoDesc,"",languages,contributors)
 
@@ -130,7 +132,7 @@ object Github extends GithubBase{
       (repoJson \ "language").extract[String],
       (repoJson \ "stargazers_count").extract[Int],
       forks,
-      0,//num of releases
+      releases,//num of releases
       (repoJson \ "pushed_at").extract[String],
       (repoJson \ "created_at").extract[String],
       contributors,
@@ -168,6 +170,47 @@ object Github extends GithubBase{
       (getContributors(contributorsJson), numCommits)
     else
       (List(),0)
+  }
+
+  def buildReleases(releasesJson: ArrayBuffer[JValue]): (List[Release]) = {
+
+    def getReleases(jsonReleases: ArrayBuffer[JValue]): List[Release] = {
+      val releases = jsonReleases.map( releaseJson => {
+        var downloads = 0
+
+        def getAssets(jsonReleaseAsset: List[JValue]): List[ReleaseAsset] = {
+          val assets = jsonReleaseAsset.map( assetJson => {
+            downloads += (assetJson \ "download_count").extract[Int]
+            ReleaseAsset(
+                (assetJson \ "id").extract[String],
+                (assetJson \ "name").extract[String],
+                (assetJson \ "label").extract[String],
+                (assetJson \ "size").extract[Int],
+                (assetJson \ "download_count").extract[Int]
+            )
+          })
+          assets.toList
+        }
+
+        val releaseAssets: List[JValue] = (releaseJson \ "assets").children
+        val listAssets = getAssets(releaseAssets)
+
+        Release(
+            (releaseJson \ "id").extract[String],
+            (releaseJson \"name").extract[String],
+            (releaseJson \"tag_name").extract[String],
+            listAssets,
+            downloads
+        )
+      })
+      releases.toList
+    }
+
+    if(releasesJson.nonEmpty && !JsonUtils.hasField(STAGE_ERROR, releasesJson(0)))
+      (getReleases(releasesJson))
+    else
+      (List())
+
   }
 
   def buildForks(forksJson: ArrayBuffer[JValue]): Forks = {
