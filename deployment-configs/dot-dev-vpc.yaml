@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  dotProdVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      EnableDnsSupport: 'false'
+      EnableDnsHostnames: 'false'
+      Tags:
+      - Key: Name
+        Value: dot-task4-VPC
+  dotPubSub:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: dotProdVPC
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.0.0/26
+      Tags:
+        - Key: Name
+          Value: Pub_Sub
+
+  dotPrivSubB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: dotProdVPC
+      AvailabilityZone: us-east-1b
+      CidrBlock: 10.0.0.64/26
+      Tags:
+        - Key: Name
+          Value: Pub_Sub_B
+  dotPrivSubC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: dotProdVPC
+      AvailabilityZone: us-east-1c
+      CidrBlock: 10.0.0.128/26
+      Tags:
+        - Key: Name
+          Value: Pub_Sub_C
+  dotPubRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: dotProdVPC
+      Tags:
+      - Key: Name
+        Value: Pub_RT
+  dotPrivRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: dotProdVPC
+      Tags:
+      - Key: Name
+        Value: Priv_RT
+  dotGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: dot_GW
+
+  dotNAT:
+    DependsOn: dotGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - EIP
+        - AllocationId
+      SubnetId:
+        Ref: dotPubSub
+      Tags:
+        - Key: Name
+          Value: dot_NAT
+  dotEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  dotRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: dotPrivRT
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: dotNAT
