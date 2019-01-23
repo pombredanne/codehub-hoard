@@ -80,7 +80,7 @@ def process_sonar_api_call(repo,config):
     for metric in metrics_list:
         print("In updating ptoblems....")
         print(repo['project_name'])
-        returned_res = requests.get(configurations['sonar_api_local_base_url']+'?resource='+repo['project_name']+"&metrics="+metric)
+        returned_res = requests.get(configurations['sonar_api_local_base_url']+'?resource='+repo['org']+'_'+repo['project_name']+"&metrics="+metric)
         returned_json = {}
         print(returned_res)
         if(returned_res.status_code == 200):
