@@ -16,6 +16,7 @@ echo creating kafka topics...
 #$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic SONAR_DATA_QUEUE
 #$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic DEPENDENCY_DATA_QUEUE
 #$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic CLONED_DEP_DATA_QUEUE
+#$KAFKA_HOME/bin/kafka-topics.sh --delete --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --topic VIRUS_SCAN_QUEUE
 
 
 
@@ -31,4 +32,7 @@ $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} -
 sleep 5
 
 $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --replication-factor 1 --partitions 1 --topic CLONED_DEP_DATA_QUEUE
+sleep 5
+
+$KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper ${KAFKA_ZOOKEEPER_SERVER} --replication-factor 1 --partitions 1 --topic VIRUS_SCAN_QUEUE
 sleep 5
