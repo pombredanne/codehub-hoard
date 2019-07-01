@@ -71,10 +71,7 @@ def _process_vscan_output(output, ref_path):
     result = {}
     files = []
     metrics = False
-    lc = 1
     for line in lines:
-        print(str(lc)+") "+line)
-        lc += 1
         if not metrics:
             if "FOUND" in line:
                 pline = _process_file_line(line, ref_path)
