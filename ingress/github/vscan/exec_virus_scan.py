@@ -7,6 +7,7 @@ import xmltodict
 import shutil,pickle
 import pickle, kafkaConsumer, kafkaProducer
 import time
+from datetime import datetime
 import logging
 from subprocess import Popen, PIPE
 import subprocess
@@ -88,6 +89,7 @@ def _process_vscan_output(output, ref_path):
             if mName is None:
                 continue
             result[mName] = mValue
+    result['lastscan'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
     result['reported_files'] = files
     return result
 
@@ -126,9 +128,7 @@ def _process_messages(config, messages):
                 continue
             data["vscan"] = vscan_result
             print('MSG: VIRUS_SCAN_QUEUE')
-            print(data)
             kafkaProducer.publish_kafka_message(data,config,'VIRUS_SCAN_QUEUE')
-            print(json.dumps(data, indent=2))
             print(time.strftime("%c")+" Scan completed.")
 
 
