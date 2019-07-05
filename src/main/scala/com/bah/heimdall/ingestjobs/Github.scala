@@ -44,7 +44,7 @@ object Github extends GithubBase{
 
     val sparkConf = new SparkConf().setAppName("Ingest Project Data")
     sparkConf.set("spark.eventLog.enabled", "true")
-    sparkConf.set("spark.eventLog.dir", "/var/heimdall/logs")
+    sparkConf.set("spark.eventLog.dir", "/var/codehub/logs")
     val sc = new SparkContext(sparkConf)
     //print configs
     //sc.getConf.toDebugString()
