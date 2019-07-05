@@ -8,3 +8,4 @@ smmap==0.9.0
 uritemplate.py==0.3.0
 xmltodict==0.10.2
 yarg==0.1.9
+pykafka==2.8.0
