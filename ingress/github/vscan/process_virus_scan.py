@@ -43,7 +43,7 @@ class ProcessVirusScan() :
 
         project_id = data['_id']
 
-        es_request_url = es_url+'/projects_gio/project/'+project_id+'/_update'
+        es_request_url = es_url+'/projects/project/'+project_id+'/_update'
         print(es_request_url)
         update_data = self._prepare_update_data(data)
         if update_data is None:
