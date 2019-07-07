@@ -37,6 +37,7 @@ def _read_config(args):
         config['topic'] = args.topic
 
     _convert_public_orgs(config)
+    _convert_so_public_orgs(config)
     _convert_sonar_metrics(config)
 
     return config
@@ -84,6 +85,12 @@ def _convert_public_orgs(config):
     for org in config['public_orgs'].split(','):
         orgs.append(org.strip())
     config['public_orgs'] = orgs
+
+def _convert_so_public_orgs(config):
+    repos = []
+    for repo in config['so_public_orgs'].split(','):
+        repos.append(repo.strip())
+    config['public_so_repos'] = repos
 
 def _convert_sonar_metrics(config):
     metrics = []

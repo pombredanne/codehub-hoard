@@ -61,7 +61,7 @@ def get_standalone_public_repos(config):
     orgs_public_repositories = []
     repos = configurations['standalone_public_repos']
     for repo in repos:
-        res = requests.get(configurations['public_github_api_url']+'/repos/' + repo[owner] + '/' + repo[repoid] + '?access_token='+access_token,verify=ssl_verify)
+        res = requests.get(configurations['public_github_api_url']+'/repos/' + repo[0] + '/' + repo[1] + '?access_token='+access_token,verify=ssl_verify)
         orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
     return standalone_public_repositories
 
