@@ -25,7 +25,9 @@ def collect_repositries(config):
     temp_filtered_repos = []
     if configurations['env']  == 'PUBLIC':
         pub_repos = get_public_repos(config)
+        # so_pub_repos = get_standalone_public_repos(config)
         repos = customize_repo_attributes_mapping(pub_repos)
+        # so_repos = customize_so_repo_attributes_mapping(so_pub_repos)
         clone_public_projects(repos,config)
     elif configurations['env']  == 'ENTERPRISE':
         orgs_users_ent = get_org_enterprise_repos(config) + get_users_enterprise_repos(config)
@@ -50,6 +52,18 @@ def get_public_repos(config):
         res = requests.get(configurations['public_github_api_url']+'/orgs/' + org + '/repos?access_token='+access_token,verify=ssl_verify)
         orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
     return orgs_public_repositories
+
+# Following requires repos to be stored in the config file as such:
+# repo[owner, repoid]
+def get_standalone_public_repos(config):
+    configurations = config['config']
+    access_token = configurations['public_github_access_token']
+    orgs_public_repositories = []
+    repos = configurations['standalone_public_repos']
+    for repo in repos:
+        res = requests.get(configurations['public_github_api_url']+'/repos/' + repo[owner] + '/' + repo[repoid] + '?access_token='+access_token,verify=ssl_verify)
+        orgs_public_repositories = orgs_public_repositories + json.loads(res.text)
+    return standalone_public_repositories
 
 def get_org_enterprise_repos(config):
     configurations = config['config']
@@ -115,6 +129,27 @@ def customize_repo_attributes_mapping(orgs_reponsitories):
         repos.append(projects_name_git_url)
     return repos
 
+def customize_so_repo_attributes_mapping(so_reponsitories):
+    repos = []
+    configurations = config['config']
+    env_home = expanduser("~")
+    for so_repo in so_reponsitories:
+        # orgs_repos = {}
+        clone_dir = env_home + '/cloned_projects/'+so_repo['owner']['login']+'/'+so_repo['name']
+        projects_name_git_url = {}
+        git_url = so_repo['clone_url']
+        adjusted_url = git_url.replace('https://','https://heimdallcicduser:'+configurations['public_github_access_token']+'@')
+        print("adjusted_url........")
+        print(adjusted_url)
+        projects_name_git_url['_id'] = str(so_repo['owner']['id'])+'_'+str(so_repo['id'])
+        projects_name_git_url['project_name'] = so_repo['name']
+        projects_name_git_url['clone_url'] = adjusted_url
+        projects_name_git_url['language'] = so_repo['language']
+        projects_name_git_url['org'] = so_repo['owner']['login'] #[org] ends up just referencing the login name, which for a user is just the user
+        projects_name_git_url['cloned_project_path'] = clone_dir
+        repos.append(projects_name_git_url)
+    return repos
+
 def delete_directory(path):
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -144,7 +179,7 @@ def clone_public_projects(repos,config):
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
         call(["git","clone",repo['clone_url']])
-        kafkaProducer.publish_kafka_message(repo,config)
+        # kafkaProducer.publish_kafka_message(repo,config)
 
 
 def clone_enterprise_projects(repos,config):
@@ -163,7 +198,7 @@ def clone_enterprise_projects(repos,config):
         print(curr_dir)
         setup_cloning_dir(clone_org_repo,clone_org)
         call(["git","clone",repo['clone_url']])
-        kafkaProducer.publish_kafka_message(repo,config)
+        # kafkaProducer.publish_kafka_message(repo,config)
 
 def automate_processes(config):
     repos = collect_repositries(config)
