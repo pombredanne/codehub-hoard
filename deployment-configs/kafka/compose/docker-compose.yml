@@ -1,0 +1,20 @@
+version: '3'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:2.11-0.10.2.2
+    ports:
+      - "9092:9092"
+    environment:
+      DOCKER_HOST_IP: ${DOCKER_HOST_IP}
+      ZK: ${DOCKER_HOST_IP}:2181
+      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_HOST_IP}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "INGEST_QUEUE:1:1,CLONED_DATA_QUEUE:1:1,SONAR_DATA_QUEUE:1:1,DEPENDENCY_DATA_QUEUE:1:1,CLONED_DEP_DATA_QUEUE:1:1,VIRUS_SCAN_QUEUE:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
